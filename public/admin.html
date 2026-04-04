@@ -319,7 +319,7 @@
   <main>
     <!-- Stats -->
     <div class="stats-grid">
-      <div class="stat-card"><div class="num" id="a-total">—</div><div class="lbl">Total inscrits</div></div>
+      <div class="stat-card"><div class="num" id="a-total">—</div><div class="lbl">Total contacts (inscrits + importés)</div></div>
       <div class="stat-card"><div class="num" id="a-sms">—</div><div class="lbl">SMS envoyés</div></div>
       <div class="stat-card"><div class="num" id="a-prov">—</div><div class="lbl">Provinces actives</div></div>
     </div>
@@ -687,8 +687,11 @@ async function loadVoters() {
 }
 
 function updateStats(voters) {
-  document.getElementById('a-total').textContent = voters.length;
-  document.getElementById('a-sms').textContent = voters.reduce((s, v) => s + v.sms_sent, 0);
+  const total = voters.length + ALL_EXTERNAL.length;
+  document.getElementById('a-total').textContent = total;
+  const smsSent = voters.reduce((s, v) => s + v.sms_sent, 0)
+                + ALL_EXTERNAL.reduce((s, v) => s + v.sms_sent, 0);
+  document.getElementById('a-sms').textContent = smsSent;
   document.getElementById('a-prov').textContent = new Set(voters.map(v => v.province)).size;
 }
 
@@ -981,6 +984,8 @@ async function loadExternalContacts() {
     if (el) el.textContent = ALL_EXTERNAL.length;
     const badge = document.getElementById('ext-badge');
     if (badge) badge.textContent = ALL_EXTERNAL.length;
+    // refresh total stat (inscrits + importés)
+    updateStats(ALL_VOTERS);
   } catch {}
 }
 
