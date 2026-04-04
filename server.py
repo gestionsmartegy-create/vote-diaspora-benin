@@ -32,10 +32,14 @@ SECRET_KEY         = os.getenv("SECRET_KEY", secrets.token_hex(32))
 DB_PATH            = os.path.join(os.path.dirname(__file__), "votes.db")
 SESSION_MAX_AGE    = 60 * 60 * 8  # 8 heures
 
-# API Key auth (révocable sans changer le Account SID)
+# Auth: essaie API Key d'abord, fallback sur Auth Token
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
+
 def _make_twilio():
     if TWILIO_API_KEY and TWILIO_API_SECRET and TWILIO_ACCOUNT_SID:
         return TwilioClient(TWILIO_API_KEY, TWILIO_API_SECRET, TWILIO_ACCOUNT_SID)
+    if TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN:
+        return TwilioClient(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
     return None
 
 twilio = _make_twilio()
