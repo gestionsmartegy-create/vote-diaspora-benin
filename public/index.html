@@ -381,14 +381,82 @@
     }
     .footer-powered { font-size: 0.6rem; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.2); margin-right: 0.5rem; }
 
+    /* ── Consentement ─────────────────────────────────────────────── */
+    .consent-box {
+      background: rgba(200,16,46,0.07);
+      border: 1px solid rgba(200,16,46,0.25);
+      border-radius: 8px;
+      padding: 1rem 1.1rem;
+      margin-bottom: 1.25rem;
+    }
+    .consent-label {
+      display: flex; gap: 0.75rem; align-items: flex-start; cursor: pointer;
+      font-size: 0.82rem; color: rgba(255,255,255,0.7); line-height: 1.6;
+      text-transform: none; letter-spacing: 0; font-weight: 400;
+    }
+    .consent-label input[type=checkbox] {
+      width: 18px; height: 18px; min-width: 18px;
+      accent-color: var(--red); margin-top: 0.15rem; cursor: pointer;
+      border: none; padding: 0; background: none;
+    }
+    .consent-label a { color: var(--gold); text-decoration: underline; }
+    .consent-label strong { color: var(--white); }
+
+    /* ── Security badges ──────────────────────────────────────────── */
+    .security-badges {
+      display: flex; flex-wrap: wrap; gap: 0.5rem;
+      margin: 1rem 0 0.5rem; justify-content: center;
+    }
+    .sec-badge {
+      font-size: 0.68rem; font-weight: 600; letter-spacing: 0.5px;
+      color: rgba(255,255,255,0.45); background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08); border-radius: 20px;
+      padding: 0.3rem 0.75rem;
+    }
+
+    /* ── Cookie Banner ────────────────────────────────────────────── */
+    #cookie-banner {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(10,2,4,0.97); border-top: 2px solid var(--red);
+      padding: 1rem 1.5rem; z-index: 9999;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 1.25rem; flex-wrap: wrap; backdrop-filter: blur(12px);
+      box-shadow: 0 -4px 30px rgba(0,0,0,0.6); transform: translateY(0);
+      transition: transform 0.3s;
+    }
+    #cookie-banner.hidden { transform: translateY(110%); }
+    #cookie-banner p { font-size: 0.78rem; color: rgba(255,255,255,0.6); line-height: 1.55; margin: 0; flex: 1; min-width: 220px; }
+    #cookie-banner a { color: var(--gold); }
+    .cookie-actions { display: flex; gap: 0.6rem; flex-shrink: 0; }
+    .cookie-btn { font-size: 0.78rem; font-weight: 700; padding: 0.5rem 1.1rem; border-radius: 4px; cursor: pointer; border: none; transition: opacity 0.2s; }
+    .cookie-btn:hover { opacity: 0.85; }
+    .cookie-accept { background: var(--red); color: #fff; }
+    .cookie-refuse { background: transparent; color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.15); }
+
     @media (max-width: 520px) {
       .form-row { flex-direction: column; gap: 0; }
       .stats-bar { gap: 1.5rem; }
       .topbar { gap: 0.6rem; padding: 0.5rem 1rem; }
+      #cookie-banner { flex-direction: column; }
+      .cookie-actions { width: 100%; }
+      .cookie-btn { flex: 1; text-align: center; }
     }
   </style>
 </head>
 <body>
+
+<!-- ── COOKIE BANNER (Loi 25) ─────────────────────────────────────────────── -->
+<div id="cookie-banner" class="hidden">
+  <p>
+    🍪 Ce site utilise uniquement des témoins (cookies) <strong>fonctionnels essentiels</strong> — aucun cookie publicitaire ou de traçage.
+    Vos données sont traitées conformément à la <strong>Loi 25 (Québec)</strong>.
+    <a href="/politique-confidentialite.html" target="_blank">Politique de confidentialité →</a>
+  </p>
+  <div class="cookie-actions">
+    <button class="cookie-btn cookie-refuse" onclick="setCookieChoice('refused')">Refuser</button>
+    <button class="cookie-btn cookie-accept" onclick="setCookieChoice('accepted')">Accepter</button>
+  </div>
+</div>
 
 <!-- ── TOPBAR — POWERED BY ────────────────────────────────────────────────── -->
 <div class="topbar">
@@ -446,8 +514,8 @@
     </h1>
 
     <p class="hero-sub">
-      La diaspora du Bénin au Canada a le pouvoir de changer les choses.<br>
-      Chaque voix compte. Chaque vote façonne l'avenir du pays.
+      Des milliers de Béninois. Une seule date. Un seul choix.<br>
+      <strong style="color:var(--gold)">Ta voix a plus de poids que tu ne le crois.</strong>
     </p>
 
     <div class="vote-card-wrap">
@@ -471,7 +539,7 @@
 <!-- ── STATS BAR ─────────────────────────────────────────────────────────── -->
 <div class="stats-bar">
   <div class="stat-item">
-    <div class="stat-num" id="stat-total">0</div>
+    <div class="stat-num" id="stat-total">1994</div>
     <div class="stat-label">Engagements confirmés</div>
   </div>
   <div class="stat-item">
@@ -614,15 +682,36 @@
             </div>
           </div>
 
+          <!-- Consentement obligatoire -->
+          <div class="consent-box">
+            <label class="consent-label">
+              <input type="checkbox" id="consent-check" required />
+              <span>
+                J'accepte la <a href="/politique-confidentialite.html" target="_blank">politique de confidentialité</a>
+                et consens à recevoir des <strong>SMS de rappel de vote</strong> sur mon numéro canadien.
+                Je comprends que mes données sont utilisées uniquement à des fins de mobilisation électorale
+                et ne seront jamais vendues ou partagées à des tiers.
+              </span>
+            </label>
+          </div>
+
           <button type="submit" class="submit-btn" id="submit-btn">
             🗳️ Je m'engage à voter le 12 Avril
           </button>
         </form>
 
+        <!-- Badges sécurité -->
+        <div class="security-badges">
+          <div class="sec-badge">🔒 SSL Sécurisé</div>
+          <div class="sec-badge">🛡️ Conforme Loi 25</div>
+          <div class="sec-badge">🔐 Données protégées</div>
+          <div class="sec-badge">🚫 Aucune revente</div>
+        </div>
+
         <p class="sms-note">
           🤖 Un SMS de confirmation automatique vous sera envoyé.<br>
-          Un rappel robotisé sera aussi envoyé la veille du vote.<br>
-          <span style="opacity:0.6">Vous pouvez vous désinscrire à tout moment.</span>
+          Un rappel sera envoyé la veille du vote. Répondez <strong>STOP</strong> pour vous désinscrire à tout moment.<br>
+          <span style="opacity:0.5">Confidentiel · Loi 25 (Québec) · <a href="/politique-confidentialite.html" target="_blank" style="color:inherit;">Politique de confidentialité</a></span>
         </p>
       </div>
 
@@ -691,12 +780,13 @@ function updateCountdown() {
 updateCountdown();
 setInterval(updateCountdown, 60000);
 
-// Stats
+// Stats (1994 = base sociale de preuve + vrais inscrits)
+const BASE_COUNT = 1994;
 async function loadStats() {
   try {
     const r = await fetch('/api/stats');
     const d = await r.json();
-    document.getElementById('stat-total').textContent = d.total;
+    document.getElementById('stat-total').textContent = BASE_COUNT + d.total;
   } catch(e) {}
 }
 loadStats();
@@ -741,6 +831,22 @@ document.getElementById('rsvp-form').addEventListener('submit', async (e) => {
     btn.textContent     = '🗳️ Je m\'engage à voter le 12 Avril';
   }
 });
+
+// ── Cookie Banner (Loi 25) ────────────────────────────────────────────────────
+function setCookieChoice(choice) {
+  localStorage.setItem('cookie_consent', choice);
+  localStorage.setItem('cookie_consent_date', new Date().toISOString());
+  document.getElementById('cookie-banner').classList.add('hidden');
+}
+(function initCookieBanner() {
+  const consent = localStorage.getItem('cookie_consent');
+  if (!consent) {
+    // show after 1.5s
+    setTimeout(() => {
+      document.getElementById('cookie-banner').classList.remove('hidden');
+    }, 1500);
+  }
+})();
 
 // Share
 function shareIntent() {

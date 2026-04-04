@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Politique de confidentialité — Plateforme Vote Diaspora Bénin 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red:       #C8102E;
+      --red-dark:  #9B0B22;
+      --red-light: #E8203E;
+      --gold:      #F5C800;
+      --white:     #FFFFFF;
+      --gray:      #6B7280;
+      --dark:      #0f0305;
+      --dark-2:    #1a0509;
+      --dark-3:    #220810;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--dark);
+      color: var(--white);
+      overflow-x: hidden;
+      line-height: 1.7;
+    }
+
+    /* ── TOPBAR ──────────────────────────────────────────────────── */
+    .topbar {
+      background: rgba(0,0,0,0.88);
+      border-bottom: 1px solid rgba(200,16,46,0.25);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: rgba(255,255,255,0.65);
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      transition: color 0.2s;
+      padding: 0.4rem 0.75rem;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 6px;
+    }
+    .back-link:hover {
+      color: var(--white);
+      border-color: rgba(200,16,46,0.5);
+      background: rgba(200,16,46,0.08);
+    }
+    .back-arrow {
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    .topbar-center {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .powered-label {
+      font-size: 0.62rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      font-weight: 600;
+    }
+
+    .logo-divider {
+      width: 1px;
+      height: 28px;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .logo-wrap { display: flex; align-items: center; }
+
+    .topbar-right {
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    /* ── HERO / PAGE HEADER ──────────────────────────────────────── */
+    .page-hero {
+      background:
+        radial-gradient(ellipse at 80% 0%, rgba(200,16,46,0.35) 0%, transparent 50%),
+        radial-gradient(ellipse at 5% 100%, rgba(200,16,46,0.15) 0%, transparent 50%),
+        var(--dark);
+      padding: 4.5rem 1.5rem 3.5rem;
+      text-align: center;
+      border-bottom: 1px solid rgba(200,16,46,0.18);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-hero::before {
+      content: 'CONFIDENTIALITÉ';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(4rem, 15vw, 11rem);
+      color: rgba(200,16,46,0.04);
+      white-space: nowrap;
+      pointer-events: none;
+      letter-spacing: 0.05em;
+      z-index: 0;
+    }
+
+    .page-hero-inner { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(200,16,46,0.15);
+      border: 1px solid rgba(200,16,46,0.35);
+      border-radius: 100px;
+      padding: 0.3rem 1rem;
+      font-size: 0.68rem;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+
+    .page-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      letter-spacing: 0.04em;
+      line-height: 1.05;
+      margin-bottom: 1rem;
+      color: var(--white);
+    }
+
+    .page-title .accent { color: var(--gold); }
+
+    .page-subtitle {
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.55);
+      max-width: 560px;
+      margin: 0 auto 1.5rem;
+      line-height: 1.65;
+    }
+
+    .effective-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(245,200,0,0.08);
+      border: 1px solid rgba(245,200,0,0.25);
+      border-radius: 8px;
+      padding: 0.5rem 1.1rem;
+      font-size: 0.8rem;
+      color: var(--gold);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .loi25-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(0,155,58,0.08);
+      border: 1px solid rgba(0,155,58,0.25);
+      border-radius: 8px;
+      padding: 0.5rem 1.1rem;
+      font-size: 0.8rem;
+      color: #4ade80;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-left: 0.75rem;
+    }
+
+    /* ── TOC ─────────────────────────────────────────────────────── */
+    .toc-wrapper {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 0;
+    }
+
+    .toc {
+      background: var(--dark-2);
+      border: 1px solid rgba(200,16,46,0.2);
+      border-radius: 14px;
+      padding: 1.75rem 2rem;
+    }
+
+    .toc-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1rem;
+      letter-spacing: 3px;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .toc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 0.35rem 1.5rem;
+    }
+
+    .toc-grid a {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 500;
+      padding: 0.25rem 0;
+      border-bottom: 1px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .toc-grid a:hover {
+      color: var(--white);
+      border-bottom-color: rgba(200,16,46,0.3);
+    }
+    .toc-num {
+      color: var(--red);
+      font-weight: 700;
+      font-size: 0.75rem;
+      min-width: 1.6rem;
+      font-family: 'Bebas Neue', sans-serif;
+      letter-spacing: 1px;
+    }
+
+    /* ── MAIN CONTENT ────────────────────────────────────────────── */
+    .content-wrapper {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 5rem;
+    }
+
+    /* ── SECTION CARD ────────────────────────────────────────────── */
+    .policy-section {
+      background: var(--dark-2);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      padding: 2.5rem 2.5rem 2rem;
+      margin-bottom: 1.75rem;
+      position: relative;
+      transition: border-color 0.2s;
+    }
+    .policy-section:hover {
+      border-color: rgba(200,16,46,0.2);
+    }
+
+    .section-number {
+      position: absolute;
+      top: -1px;
+      left: 2rem;
+      background: var(--red);
+      color: var(--white);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      padding: 0.2rem 0.75rem;
+      border-radius: 0 0 8px 8px;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding-top: 1rem;
+    }
+
+    .section-icon {
+      font-size: 1.75rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .section-heading-text h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.65rem;
+      letter-spacing: 0.04em;
+      color: var(--white);
+      line-height: 1.1;
+      margin-bottom: 0.2rem;
+    }
+
+    .section-heading-text .section-desc {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.35);
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── TYPOGRAPHY ──────────────────────────────────────────────── */
+    .policy-section p {
+      font-size: 0.92rem;
+      color: rgba(255,255,255,0.72);
+      margin-bottom: 1rem;
+      line-height: 1.75;
+    }
+    .policy-section p:last-child { margin-bottom: 0; }
+
+    .policy-section ul,
+    .policy-section ol {
+      padding-left: 0;
+      list-style: none;
+      margin-bottom: 1rem;
+    }
+
+    .policy-section ul li,
+    .policy-section ol li {
+      font-size: 0.92rem;
+      color: rgba(255,255,255,0.72);
+      padding: 0.4rem 0 0.4rem 1.6rem;
+      position: relative;
+      line-height: 1.65;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .policy-section ul li:last-child,
+    .policy-section ol li:last-child {
+      border-bottom: none;
+    }
+
+    .policy-section ul li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: var(--red);
+      font-size: 0.7rem;
+      top: 0.55rem;
+    }
+
+    .policy-section ol {
+      counter-reset: ol-counter;
+    }
+    .policy-section ol li {
+      counter-increment: ol-counter;
+    }
+    .policy-section ol li::before {
+      content: counter(ol-counter) '.';
+      position: absolute;
+      left: 0;
+      color: var(--gold);
+      font-size: 0.8rem;
+      font-weight: 700;
+      top: 0.45rem;
+    }
+
+    strong { color: var(--white); font-weight: 700; }
+    em { color: rgba(255,255,255,0.55); font-style: italic; }
+
+    /* ── HIGHLIGHT BOX ───────────────────────────────────────────── */
+    .highlight-box {
+      background: rgba(200,16,46,0.07);
+      border-left: 3px solid var(--red);
+      border-radius: 0 10px 10px 0;
+      padding: 1rem 1.25rem;
+      margin: 1.2rem 0;
+    }
+    .highlight-box p {
+      margin-bottom: 0 !important;
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.75) !important;
+    }
+
+    .info-box {
+      background: rgba(245,200,0,0.06);
+      border: 1px solid rgba(245,200,0,0.2);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin: 1.2rem 0;
+    }
+    .info-box p {
+      margin-bottom: 0 !important;
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.72) !important;
+    }
+
+    .success-box {
+      background: rgba(0,155,58,0.07);
+      border: 1px solid rgba(0,155,58,0.22);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin: 1.2rem 0;
+    }
+    .success-box p {
+      margin-bottom: 0 !important;
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.72) !important;
+    }
+
+    /* ── DATA TABLE ──────────────────────────────────────────────── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.2rem 0;
+      font-size: 0.88rem;
+    }
+    .data-table thead th {
+      background: rgba(200,16,46,0.15);
+      color: var(--white);
+      font-weight: 700;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(200,16,46,0.3);
+    }
+    .data-table tbody td {
+      padding: 0.75rem 1rem;
+      color: rgba(255,255,255,0.68);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      vertical-align: top;
+      line-height: 1.55;
+    }
+    .data-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+    .data-table tbody tr:hover td {
+      background: rgba(255,255,255,0.02);
+    }
+    .tag {
+      display: inline-block;
+      background: rgba(200,16,46,0.15);
+      border: 1px solid rgba(200,16,46,0.3);
+      border-radius: 4px;
+      padding: 0.1rem 0.5rem;
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.6);
+      font-weight: 600;
+    }
+    .tag-gold {
+      background: rgba(245,200,0,0.1);
+      border-color: rgba(245,200,0,0.25);
+      color: rgba(245,200,0,0.8);
+    }
+
+    /* ── CONTACT BOX ─────────────────────────────────────────────── */
+    .contact-box {
+      background: linear-gradient(135deg, rgba(200,16,46,0.12), rgba(200,16,46,0.06));
+      border: 1px solid rgba(200,16,46,0.3);
+      border-radius: 14px;
+      padding: 1.75rem 2rem;
+      margin-top: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .contact-icon {
+      font-size: 2.5rem;
+      flex-shrink: 0;
+    }
+
+    .contact-details { flex: 1; min-width: 200px; }
+    .contact-details h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.1rem;
+      letter-spacing: 2px;
+      color: var(--white);
+      margin-bottom: 0.4rem;
+    }
+    .contact-details p {
+      font-size: 0.85rem !important;
+      color: rgba(255,255,255,0.6) !important;
+      margin-bottom: 0.3rem !important;
+      line-height: 1.5 !important;
+    }
+    .contact-details a {
+      color: var(--gold);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .contact-details a:hover { text-decoration: underline; }
+
+    /* ── RIGHTS GRID ─────────────────────────────────────────────── */
+    .rights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1rem;
+      margin: 1.25rem 0;
+    }
+
+    .right-card {
+      background: var(--dark-3);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 1.25rem;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .right-card:hover {
+      border-color: rgba(200,16,46,0.3);
+      transform: translateY(-2px);
+    }
+    .right-card-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.6rem;
+    }
+    .right-card h4 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1rem;
+      letter-spacing: 1.5px;
+      color: var(--white);
+      margin-bottom: 0.4rem;
+    }
+    .right-card p {
+      font-size: 0.82rem !important;
+      color: rgba(255,255,255,0.52) !important;
+      margin-bottom: 0 !important;
+      line-height: 1.55 !important;
+    }
+
+    /* ── DIVIDER ─────────────────────────────────────────────────── */
+    .section-divider {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      margin: 2rem 0 1.5rem;
+    }
+
+    /* ── FOOTER ──────────────────────────────────────────────────── */
+    footer {
+      background: rgba(0,0,0,0.5);
+      border-top: 1px solid rgba(200,16,46,0.18);
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+    }
+
+    .footer-logos {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-powered {
+      font-size: 0.62rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.25);
+      font-weight: 600;
+    }
+
+    footer p {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.45);
+      line-height: 1.6;
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+    .footer-links a {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.3);
+      text-decoration: none;
+      letter-spacing: 0.5px;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: rgba(255,255,255,0.7); }
+    .footer-links .active-link {
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    /* ── BACK TO TOP ─────────────────────────────────────────────── */
+    .back-to-top {
+      position: fixed;
+      bottom: 1.75rem;
+      right: 1.75rem;
+      z-index: 300;
+      background: var(--red);
+      color: var(--white);
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 20px rgba(200,16,46,0.45);
+      transition: background 0.2s, transform 0.2s, opacity 0.3s;
+      opacity: 0;
+      pointer-events: none;
+      text-decoration: none;
+    }
+    .back-to-top.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .back-to-top:hover {
+      background: var(--red-light);
+      transform: translateY(-3px);
+    }
+
+    /* ── PROGRESS BAR ────────────────────────────────────────────── */
+    .reading-progress {
+      position: fixed;
+      top: 56px;
+      left: 0;
+      height: 2px;
+      background: var(--red);
+      z-index: 199;
+      width: 0%;
+      transition: width 0.1s;
+    }
+
+    /* ── RESPONSIVE ──────────────────────────────────────────────── */
+    @media (max-width: 700px) {
+      .topbar { padding: 0 1rem; }
+      .topbar-right { display: none; }
+      .topbar-center .powered-label { display: none; }
+      .topbar-center .logo-divider:first-of-type { display: none; }
+
+      .page-hero { padding: 3.5rem 1rem 2.5rem; }
+
+      .toc-wrapper { padding: 1.75rem 1rem 0; }
+      .toc { padding: 1.25rem 1.25rem; }
+      .toc-grid { grid-template-columns: 1fr; gap: 0; }
+
+      .content-wrapper { padding: 2rem 1rem 4rem; }
+
+      .policy-section { padding: 2rem 1.25rem 1.5rem; }
+      .section-number { left: 1.25rem; }
+
+      .rights-grid { grid-template-columns: 1fr 1fr; }
+
+      .contact-box { flex-direction: column; gap: 1rem; }
+
+      .data-table { font-size: 0.8rem; }
+      .data-table thead th,
+      .data-table tbody td { padding: 0.6rem 0.75rem; }
+
+      .back-to-top { bottom: 1.25rem; right: 1.25rem; }
+    }
+
+    @media (max-width: 440px) {
+      .rights-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── READING PROGRESS ───────────────────────────────────────────────────── -->
+<div class="reading-progress" id="reading-progress"></div>
+
+<!-- ── TOPBAR ─────────────────────────────────────────────────────────────── -->
+<div class="topbar">
+  <div class="topbar-left">
+    <a href="/" class="back-link">
+      <span class="back-arrow">←</span> Retour
+    </a>
+  </div>
+
+  <div class="topbar-center">
+    <span class="powered-label">Powered by</span>
+    <div class="logo-divider"></div>
+
+    <!-- Logo 1 : 26↗ -->
+    <div class="logo-wrap">
+      <svg width="48" height="34" viewBox="0 0 120 85" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Logo 26">
+        <text x="8" y="52" font-family="Arial Black, sans-serif" font-weight="900" font-size="52" fill="white" letter-spacing="-2">26</text>
+        <circle cx="10" cy="14" r="5" fill="#C8102E"/>
+        <circle cx="95" cy="22" r="5" fill="#C8102E"/>
+        <path d="M 30 72 Q 65 90 95 68" stroke="#F5C800" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <polygon points="95,62 103,72 89,74" fill="#F5C800"/>
+      </svg>
+    </div>
+
+    <div class="logo-divider"></div>
+
+    <!-- Logo 2 : NEXUS 229 -->
+    <div class="logo-wrap">
+      <svg width="90" height="34" viewBox="0 0 220 85" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Nexus 229">
+        <text x="0" y="58" font-family="Arial, sans-serif" font-weight="700" font-size="44" fill="white" letter-spacing="-1">NE</text>
+        <line x1="95" y1="8" x2="135" y2="75" stroke="#F5C800" stroke-width="6" stroke-linecap="round"/>
+        <line x1="95" y1="75" x2="115" y2="42" stroke="#009B3A" stroke-width="6" stroke-linecap="round"/>
+        <line x1="115" y1="42" x2="135" y2="8" stroke="#009B3A" stroke-width="6" stroke-linecap="round"/>
+        <line x1="113" y1="44" x2="135" y2="75" stroke="#C8102E" stroke-width="6" stroke-linecap="round"/>
+        <text x="138" y="58" font-family="Arial, sans-serif" font-weight="700" font-size="44" fill="white" letter-spacing="-1">US</text>
+        <text x="185" y="72" font-family="Arial, sans-serif" font-weight="700" font-size="16" fill="#F5C800">229</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="topbar-right">Loi 25 &nbsp;·&nbsp; QC</div>
+</div>
+
+<!-- ── PAGE HERO ──────────────────────────────────────────────────────────── -->
+<header class="page-hero" id="top">
+  <div class="page-hero-inner">
+    <div class="hero-eyebrow">
+      <span>🇨🇦</span> Plateforme Vote Diaspora — Bénin 2026
+    </div>
+
+    <h1 class="page-title">
+      POLITIQUE DE<br><span class="accent">CONFIDENTIALITÉ</span>
+    </h1>
+
+    <p class="page-subtitle">
+      Ce document décrit comment nous collectons, utilisons et protégeons vos données personnelles, conformément à la <em>Loi modernisant des dispositions législatives en matière de protection des renseignements personnels</em> (Loi 25, Québec).
+    </p>
+
+    <div>
+      <span class="effective-badge">&#128197; En vigueur : 2 avril 2026</span>
+      <span class="loi25-badge">&#10003; Conforme Loi 25 — Québec</span>
+    </div>
+  </div>
+</header>
+
+<!-- ── TABLE OF CONTENTS ──────────────────────────────────────────────────── -->
+<div class="toc-wrapper">
+  <div class="toc">
+    <div class="toc-title">&#9776; Table des matières</div>
+    <div class="toc-grid">
+      <a href="#introduction"><span class="toc-num">01</span>Introduction</a>
+      <a href="#donnees"><span class="toc-num">02</span>Données collectées</a>
+      <a href="#finalite"><span class="toc-num">03</span>Finalité du traitement</a>
+      <a href="#base-legale"><span class="toc-num">04</span>Base légale</a>
+      <a href="#conservation"><span class="toc-num">05</span>Conservation des données</a>
+      <a href="#droits"><span class="toc-num">06</span>Vos droits (Loi 25)</a>
+      <a href="#partage"><span class="toc-num">07</span>Partage des données</a>
+      <a href="#transfert"><span class="toc-num">08</span>Transfert hors Québec</a>
+      <a href="#cookies"><span class="toc-num">09</span>Témoins (Cookies)</a>
+      <a href="#consentement"><span class="toc-num">10</span>Consentement</a>
+      <a href="#responsable"><span class="toc-num">11</span>Responsable de la protection</a>
+      <a href="#modifications"><span class="toc-num">12</span>Modifications</a>
+      <a href="#entree-vigueur"><span class="toc-num">13</span>Date d'entrée en vigueur</a>
+    </div>
+  </div>
+</div>
+
+<!-- ── MAIN CONTENT ───────────────────────────────────────────────────────── -->
+<main class="content-wrapper">
+
+  <!-- ── 01 INTRODUCTION ── -->
+  <section class="policy-section" id="introduction">
+    <div class="section-number">01</div>
+    <div class="section-heading">
+      <div class="section-icon">&#128200;</div>
+      <div class="section-heading-text">
+        <h2>Introduction</h2>
+        <div class="section-desc">Qui nous sommes et quel est l'objet de cette plateforme</div>
+      </div>
+    </div>
+
+    <p>La présente politique de confidentialité s'applique à la <strong>Plateforme Vote Diaspora — Bénin 2026</strong> (ci-après « la Plateforme »), accessible à l'adresse <strong>votediaspora.ca</strong>. Cette Plateforme est exploitée par la <strong>Communauté Béninoise Diaspora Canada</strong>, une initiative citoyenne et non partisane dont l'unique vocation est de mobiliser les membres de la diaspora béninoise résidant au Canada à exercer leur droit de vote lors des <strong>élections législatives du Bénin prévues le 12 avril 2026</strong>.</p>
+
+    <p>Notre mission est strictement civique : rappeler aux électrices et électeurs béninois établis au Canada la date du scrutin, les encourager à s'inscrire sur les listes électorales lorsque cela est requis, et leur envoyer un rappel par message texte (SMS) la veille du vote. Nous n'avons aucune affiliation partisane, aucun intérêt commercial et aucune relation avec un gouvernement ou un parti politique quelconque.</p>
+
+    <div class="highlight-box">
+      <p><strong>Transparence :</strong> En vous inscrivant sur cette Plateforme, vous acceptez librement de recevoir un ou deux SMS de rappel liés exclusivement aux élections béninoises du 12 avril 2026. Vos données ne sont jamais vendues, louées ou utilisées à d'autres fins.</p>
+    </div>
+
+    <p>La Plateforme est hébergée au Canada. Nous nous soumettons volontairement aux exigences de la <em>Loi modernisant des dispositions législatives en matière de protection des renseignements personnels</em> (Loi 25 du Québec, L.R.Q., c. P-39.1 telle que modifiée), laquelle constitue l'un des cadres les plus rigoureux en matière de protection de la vie privée en Amérique du Nord.</p>
+  </section>
+
+  <!-- ── 02 DONNÉES COLLECTÉES ── -->
+  <section class="policy-section" id="donnees">
+    <div class="section-number">02</div>
+    <div class="section-heading">
+      <div class="section-icon">&#128196;</div>
+      <div class="section-heading-text">
+        <h2>Données collectées</h2>
+        <div class="section-desc">Quelles informations nous recueillons et pourquoi</div>
+      </div>
+    </div>
+
+    <p>Nous collectons uniquement les renseignements personnels strictement nécessaires à l'accomplissement de notre mission de mobilisation électorale. Le principe de minimisation des données guide chacun de nos choix.</p>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Donnée</th>
+          <th>Obligatoire</th>
+          <th>Finalité principale</th>
+          <th>Source</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Prénom et nom</strong></td>
+          <td><span class="tag">Obligatoire</span></td>
+          <td>Personnaliser le message de confirmation SMS et l'engagement</td>
+          <td>Formulaire d'inscription</td>
+        </tr>
+        <tr>
+          <td><strong>Numéro de téléphone</strong></td>
+          <td><span class="tag">Obligatoire</span></td>
+          <td>Envoi du SMS de confirmation et du rappel de vote</td>
+          <td>Formulaire d'inscription</td>
+        </tr>
+        <tr>
+          <td><strong>Adresse courriel</strong></td>
+          <td><span class="tag tag-gold">Facultatif</span></td>
+          <td>Communication complémentaire éventuelle liée au vote (jamais de publicité)</td>
+          <td>Formulaire d'inscription</td>
+        </tr>
+        <tr>
+          <td><strong>Ville</strong></td>
+          <td><span class="tag tag-gold">Facultatif</span></td>
+          <td>Statistiques agrégées sur la répartition géographique de la diaspora (aucune utilisation individuelle)</td>
+          <td>Formulaire d'inscription</td>
+        </tr>
+        <tr>
+          <td><strong>Province / Territoire</strong></td>
+          <td><span class="tag">Obligatoire</span></td>
+          <td>Statistiques agrégées sur la portée de la campagne au Canada</td>
+          <td>Formulaire d'inscription</td>
+        </tr>
+        <tr>
+          <td><strong>Adresse IP</strong></td>
+          <td><span class="tag">Technique</span></td>
+          <td>Journaux de sécurité du serveur, prévention des soumissions frauduleuses en masse</td>
+          <td>Journaux automatiques du serveur</td>
+        </tr>
+        <tr>
+          <td><strong>Horodatage d'inscription</strong></td>
+          <td><span class="tag">Technique</span></td>
+          <td>Preuve de consentement daté, gestion des files d'envoi SMS</td>
+          <td>Système automatique de la Plateforme</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="info-box">
+      <p><strong>Nous ne collectons pas :</strong> données de paiement, numéro d'assurance sociale, données biométriques, orientation politique, situation familiale, informations de santé, données de navigation inter-sites, identifiants de réseaux sociaux ou tout autre renseignement sensible au sens de la Loi 25.</p>
+    </div>
+  </section>
+
+  <!-- ── 03 FINALITÉ DU TRAITEMENT ── -->
+  <section class="policy-section" id="finalite">
+    <div class="section-number">03</div>
+    <div class="section-heading">
+      <div class="section-icon">&#127919;</div>
+      <div class="section-heading-text">
+        <h2>Finalité du traitement</h2>
+        <div class="section-desc">Pourquoi nous utilisons vos données — et ce que nous n'en ferons jamais</div>
+      </div>
+    </div>
+
+    <p>Vos renseignements personnels sont collectés et traités exclusivement aux fins suivantes :</p>
+
+    <ol>
+      <li><strong>Envoi d'un SMS de confirmation</strong> — Immédiatement après votre inscription, un message automatisé vous confirme que votre engagement de vote a été enregistré avec succès.</li>
+      <li><strong>Envoi d'un rappel SMS de vote</strong> — La veille du scrutin (ou le matin du 12 avril 2026), un message de rappel automatisé vous est transmis afin de vous encourager à exercer votre droit de vote.</li>
+      <li><strong>Mesure de la portée de la campagne</strong> — Nous analysons les données agrégées et anonymisées (répartition provinciale, taux d'inscription) afin d'évaluer l'efficacité de la campagne de mobilisation. Ces statistiques ne permettent jamais d'identifier un individu.</li>
+      <li><strong>Prévention de la fraude et sécurité</strong> — Les journaux techniques (adresse IP, horodatage) nous permettent de détecter et de bloquer les soumissions automatisées malveillantes.</li>
+    </ol>
+
+    <div class="highlight-box">
+      <p><strong>Aucun usage commercial :</strong> Vos données ne sont jamais utilisées à des fins commerciales, publicitaires, de profilage, de revente ou de toute autre finalité non décrite dans la présente politique. Cette interdiction est absolue et inconditionnelle.</p>
+    </div>
+
+    <p>Tout traitement ultérieur de vos données pour une finalité incompatible avec celles énoncées ci-dessus nécessiterait l'obtention d'un nouveau consentement explicite de votre part, conformément à l'article 12 de la Loi 25.</p>
+  </section>
+
+  <!-- ── 04 BASE LÉGALE ── -->
+  <section class="policy-section" id="base-legale">
+    <div class="section-number">04</div>
+    <div class="section-heading">
+      <div class="section-icon">&#9878;</div>
+      <div class="section-heading-text">
+        <h2>Base légale</h2>
+        <div class="section-desc">Le fondement juridique qui autorise le traitement de vos données</div>
+      </div>
+    </div>
+
+    <p>Le traitement de vos renseignements personnels repose exclusivement sur votre <strong>consentement libre, éclairé, spécifique et non équivoque</strong>, tel que requis par la Loi sur la protection des renseignements personnels dans le secteur privé (Loi 25, Québec).</p>
+
+    <p>Ce consentement est recueilli au moment de votre inscription sur la Plateforme, via une <strong>case à cocher distincte et non pré-cochée</strong>, libellée comme suit :</p>
+
+    <div class="info-box">
+      <p>&#9744; <em>« J'accepte de recevoir un ou deux SMS de rappel de vote pour les élections du Bénin du 12 avril 2026. Je comprends que mes données ne seront pas utilisées à d'autres fins. Je peux me désinscrire à tout moment en répondant STOP. »</em></p>
+    </div>
+
+    <p>Conformément à la Loi 25 :</p>
+
+    <ul>
+      <li>Le consentement est <strong>libre</strong> : aucune condition ou avantage n'est conditionné à son obtention.</li>
+      <li>Le consentement est <strong>éclairé</strong> : les finalités sont clairement expliquées avant la soumission du formulaire.</li>
+      <li>Le consentement est <strong>spécifique</strong> : il vise uniquement les SMS de rappel de vote pour le 12 avril 2026.</li>
+      <li>Le consentement est <strong>manifeste</strong> : il résulte d'un acte positif et volontaire (clic sur la case à cocher).</li>
+      <li>Le consentement est <strong>révocable</strong> à tout moment, sans frais ni pénalité.</li>
+    </ul>
+
+    <div class="success-box">
+      <p>Nous conservons une preuve horodatée de chaque consentement (date, heure, version de la politique en vigueur au moment de l'inscription). Ce registre est accessible sur demande adressée à <a href="mailto:confidentialite@votediaspora.ca">confidentialite@votediaspora.ca</a>.</p>
+    </div>
+  </section>
+
+  <!-- ── 05 CONSERVATION DES DONNÉES ── -->
+  <section class="policy-section" id="conservation">
+    <div class="section-number">05</div>
+    <div class="section-heading">
+      <div class="section-icon">&#128336;</div>
+      <div class="section-heading-text">
+        <h2>Conservation des données</h2>
+        <div class="section-desc">Combien de temps nous conservons vos informations</div>
+      </div>
+    </div>
+
+    <p>Nous appliquons un calendrier de conservation strict, fondé sur le principe de durée limitée au nécessaire (<em>data minimization</em>) :</p>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Type de données</th>
+          <th>Durée de conservation</th>
+          <th>Date de suppression prévue</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Données d'inscription</strong><br><em>(nom, téléphone, province, ville, courriel)</em></td>
+          <td>Jusqu'au 11 juillet 2026<br><em>(90 jours après le vote)</em></td>
+          <td>Au plus tard le <strong>11 juillet 2026</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Journaux techniques</strong><br><em>(adresse IP, horodatages)</em></td>
+          <td>60 jours après la date de génération</td>
+          <td>Suppression glissante, au plus tard le <strong>11 juin 2026</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Registre de consentement</strong></td>
+          <td>1 an après le vote, pour preuve légale éventuelle</td>
+          <td>Au plus tard le <strong>12 avril 2027</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Données supprimées sur demande</strong></td>
+          <td>Suppression dans les <strong>30 jours</strong> suivant la demande</td>
+          <td>À la réception de votre demande à <a href="mailto:confidentialite@votediaspora.ca" style="color:var(--gold)">confidentialite@votediaspora.ca</a></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="highlight-box">
+      <p><strong>Suppression permanente :</strong> À l'échéance prévue, toutes les données personnelles identifiantes sont supprimées de façon définitive et irréversible de nos systèmes de stockage (base de données, sauvegardes, journaux). Les données agrégées et anonymisées (statistiques de province sans identification individuelle) peuvent être conservées indéfiniment à des fins historiques et de transparence.</p>
+    </div>
+  </section>
+
+  <!-- ── 06 VOS DROITS (LOI 25) ── -->
+  <section class="policy-section" id="droits">
+    <div class="section-number">06</div>
+    <div class="section-heading">
+      <div class="section-icon">&#9878;</div>
+      <div class="section-heading-text">
+        <h2>Vos droits (Loi 25)</h2>
+        <div class="section-desc">Les droits que vous pouvez exercer concernant vos données personnelles</div>
+      </div>
+    </div>
+
+    <p>En tant que personne concernée, vous bénéficiez de l'ensemble des droits reconnus par la <em>Loi sur la protection des renseignements personnels dans le secteur privé</em> (Loi 25, Québec). Ces droits s'exercent sans frais, à tout moment.</p>
+
+    <div class="rights-grid">
+      <div class="right-card">
+        <div class="right-card-icon">&#128270;</div>
+        <h4>Droit d'accès</h4>
+        <p>Vous pouvez demander à consulter l'ensemble des renseignements personnels que nous détenons à votre sujet, ainsi que des informations sur la façon dont ils sont utilisés.</p>
+      </div>
+      <div class="right-card">
+        <div class="right-card-icon">&#9999;&#65039;</div>
+        <h4>Droit de rectification</h4>
+        <p>Si vos données sont inexactes, incomplètes ou équivoques, vous pouvez demander leur correction. Nous procéderons à la mise à jour dans les 30 jours suivant votre demande.</p>
+      </div>
+      <div class="right-card">
+        <div class="right-card-icon">&#128465;&#65039;</div>
+        <h4>Droit à l'effacement</h4>
+        <p>Vous pouvez demander la suppression définitive de vos données personnelles. Votre demande sera exécutée dans un délai maximum de 30 jours, sous réserve des obligations légales de conservation.</p>
+      </div>
+      <div class="right-card">
+        <div class="right-card-icon">&#128683;</div>
+        <h4>Retrait du consentement</h4>
+        <p>Vous pouvez retirer votre consentement à tout moment en répondant STOP à un SMS reçu, ou en envoyant un courriel à confidentialite@votediaspora.ca. Le retrait est immédiat et sans condition.</p>
+      </div>
+      <div class="right-card">
+        <div class="right-card-icon">&#128190;</div>
+        <h4>Portabilité</h4>
+        <p>Vous avez le droit de recevoir vos données dans un format structuré et lisible par machine (JSON ou CSV), afin de les transmettre à un autre responsable de traitement si vous le souhaitez.</p>
+      </div>
+      <div class="right-card">
+        <div class="right-card-icon">&#128204;</div>
+        <h4>Déposer une plainte</h4>
+        <p>Si vous estimez que vos droits n'ont pas été respectés, vous pouvez déposer une plainte auprès de la Commission d'accès à l'information du Québec (CAI) à l'adresse <strong>www.cai.gouv.qc.ca</strong>.</p>
+      </div>
+    </div>
+
+    <div class="contact-box">
+      <div class="contact-icon">&#9993;&#65039;</div>
+      <div class="contact-details">
+        <h3>Exercer vos droits</h3>
+        <p>Pour exercer l'un ou l'autre de ces droits, adressez votre demande écrite à :</p>
+        <a href="mailto:confidentialite@votediaspora.ca">confidentialite@votediaspora.ca</a>
+        <p style="margin-top:0.5rem;">Nous accuserons réception de votre demande dans les <strong>5 jours ouvrables</strong> et y répondrons dans un délai maximum de <strong>30 jours calendaires</strong>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 07 PARTAGE DES DONNÉES ── -->
+  <section class="policy-section" id="partage">
+    <div class="section-number">07</div>
+    <div class="section-heading">
+      <div class="section-icon">&#128101;</div>
+      <div class="section-heading-text">
+        <h2>Partage des données</h2>
+        <div class="section-desc">Avec qui vos données peuvent être partagées</div>
+      </div>
+    </div>
+
+    <p>Nous appliquons une politique de <strong>partage minimal et strictement encadré</strong> des renseignements personnels. Vos données ne sont communiquées qu'à un seul tiers, uniquement dans la mesure nécessaire à la prestation du service de rappel par SMS :</p>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Prestataire</th>
+          <th>Service fourni</th>
+          <th>Données transmises</th>
+          <th>Localisation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <strong>Twilio Inc.</strong><br>
+            <em>twilio.com</em>
+          </td>
+          <td>Envoi des messages texte (SMS) de confirmation et de rappel de vote</td>
+          <td>Numéro de téléphone, prénom (pour la personnalisation du message)</td>
+          <td>États-Unis (voir section 8)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Twilio agit en qualité de <strong>sous-traitant</strong> (processor) au sens des lois applicables sur la protection des données. Un accord de traitement de données (Data Processing Agreement) est en vigueur entre notre organisation et Twilio, garantissant que :</p>
+
+    <ul>
+      <li>Twilio n'utilise vos données que pour acheminer les SMS que nous lui demandons d'envoyer.</li>
+      <li>Twilio ne vend, ne loue et ne partage pas vos données avec des tiers pour son propre compte.</li>
+      <li>Les données transmises à Twilio sont supprimées conformément aux dispositions contractuelles et à la présente politique.</li>
+    </ul>
+
+    <div class="highlight-box">
+      <p><strong>Aucun autre partage :</strong> Nous ne vendons, ne louons, n'échangeons et ne communiquons pas vos renseignements personnels à des gouvernements (canadien, béninois ou autre), des partis politiques, des annonceurs, des courtiers en données, ou tout autre tiers non mentionné ci-dessus, sans votre consentement explicite préalable.</p>
+    </div>
+
+    <p>En cas d'obligation légale contraignante (ordonnance judiciaire, injonction d'une autorité compétente), nous pourrions être tenus de communiquer certains renseignements. Dans ce cas, nous vous en informerons dans les meilleurs délais, dans la mesure où la loi nous y autorise.</p>
+  </section>
+
+  <!-- ── 08 TRANSFERT HORS QUÉBEC ── -->
+  <section class="policy-section" id="transfert">
+    <div class="section-number">08</div>
+    <div class="section-heading">
+      <div class="section-icon">&#127758;</div>
+      <div class="section-heading-text">
+        <h2>Transfert hors Québec</h2>
+        <div class="section-desc">Protection de vos données lors de leur transmission aux États-Unis</div>
+      </div>
+    </div>
+
+    <p>L'utilisation du service d'envoi de SMS de Twilio implique que votre numéro de téléphone et votre prénom sont temporairement traités sur des serveurs situés aux <strong>États-Unis</strong>. Ce transfert transfrontalier est encadré conformément aux exigences de la Loi 25 du Québec (art. 17 L.R.Q., c. P-39.1).</p>
+
+    <p>Avant tout transfert, nous avons effectué une <strong>évaluation des facteurs relatifs à la vie privée (ÉFVP)</strong> spécifique à ce sous-traitant, qui conclut à un niveau de protection adéquat eu égard aux mesures suivantes :</p>
+
+    <ul>
+      <li><strong>Accord contractuel (DPA) :</strong> Un Data Processing Agreement conforme au RGPD et à la Loi 25 est en place entre notre organisation et Twilio.</li>
+      <li><strong>Certifications de Twilio :</strong> Twilio est certifié ISO 27001, PCI DSS et SOC 2 Type II. Ces certifications attestent d'un niveau élevé de sécurité informatique.</li>
+      <li><strong>Minimisation à la source :</strong> Seuls le numéro de téléphone et le prénom sont transmis à Twilio — aucun nom de famille complet, aucune adresse courriel, aucune adresse IP.</li>
+      <li><strong>Durée limitée :</strong> Les données transmises à Twilio sont utilisées uniquement pour l'acheminement immédiat du SMS et ne sont pas conservées par Twilio au-delà des délais définis dans notre accord contractuel.</li>
+      <li><strong>Politique de confidentialité de Twilio :</strong> Consultable à l'adresse <strong>twilio.com/legal/privacy</strong>.</li>
+    </ul>
+
+    <div class="info-box">
+      <p>Vous pouvez demander une copie de notre évaluation des facteurs relatifs à la vie privée concernant Twilio en écrivant à <a href="mailto:confidentialite@votediaspora.ca" style="color:var(--gold)">confidentialite@votediaspora.ca</a>.</p>
+    </div>
+  </section>
+
+  <!-- ── 09 TÉMOINS (COOKIES) ── -->
+  <section class="policy-section" id="cookies">
+    <div class="section-number">09</div>
+    <div class="section-heading">
+      <div class="section-icon">&#127850;</div>
+      <div class="section-heading-text">
+        <h2>Témoins (Cookies)</h2>
+        <div class="section-desc">Notre utilisation des fichiers témoins — strictement fonctionnelle</div>
+      </div>
+    </div>
+
+    <p>La Plateforme Vote Diaspora utilise les témoins (cookies) de façon <strong>strictement fonctionnelle et minimale</strong>. Nous n'employons aucun outil d'analyse comportementale, aucun pixel de suivi publicitaire et aucun service tiers de mesure d'audience.</p>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Témoin</th>
+          <th>Type</th>
+          <th>Finalité</th>
+          <th>Durée</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>session_admin</strong></td>
+          <td><span class="tag">Fonctionnel</span></td>
+          <td>Authentification sécurisée de l'administrateur de la Plateforme. Ce témoin est généré uniquement lors d'une connexion à l'interface d'administration et n'est jamais présent sur les pages publiques accessibles aux inscrits.</td>
+          <td>Session (supprimé à la fermeture du navigateur)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="success-box">
+      <p><strong>Aucun témoin de traçage :</strong> La Plateforme ne dépose aucun cookie de Google Analytics, Google Ads, Meta Pixel, Hotjar, Mixpanel, ou tout autre service d'analyse ou de publicité comportementale. Votre navigation n'est pas suivie, ni sur ce site ni entre sites.</p>
+    </div>
+
+    <p>Le témoin fonctionnel d'administration est strictement nécessaire au fonctionnement de l'interface de gestion et ne nécessite pas de consentement préalable en vertu de la Loi 25, car il ne sert pas à vous identifier en tant qu'inscrit et n'est pas présent dans votre session de navigation publique.</p>
+
+    <p>Si vous souhaitez vous assurer qu'aucun cookie n'est présent sur votre appareil, vous pouvez à tout moment effacer les données de navigation de votre navigateur. Cette action n'affectera pas votre inscription sur la Plateforme.</p>
+  </section>
+
+  <!-- ── 10 CONSENTEMENT ── -->
+  <section class="policy-section" id="consentement">
+    <div class="section-number">10</div>
+    <div class="section-heading">
+      <div class="section-icon">&#9989;</div>
+      <div class="section-heading-text">
+        <h2>Consentement</h2>
+        <div class="section-desc">Comment vous consentez et comment vous pouvez vous rétracter</div>
+      </div>
+    </div>
+
+    <p>Le recueil et la gestion du consentement sont au cœur de notre approche. Voici comment le consentement est obtenu et comment vous pouvez le retirer à tout moment :</p>
+
+    <hr class="section-divider" />
+
+    <h3 style="font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:2px; color:var(--gold); margin-bottom:0.75rem;">Comment le consentement est donné</h3>
+
+    <p>Lors de votre inscription sur la Plateforme :</p>
+
+    <ol>
+      <li>Vous remplissez le formulaire d'engagement avec vos coordonnées.</li>
+      <li>Avant de soumettre le formulaire, vous devez cocher une <strong>case à cocher distincte, non pré-cochée</strong>, par laquelle vous acceptez explicitement de recevoir les SMS de rappel de vote et reconnaissez avoir lu la présente politique de confidentialité.</li>
+      <li>La soumission du formulaire sans avoir coché cette case est techniquement impossible : le bouton d'envoi reste inactif jusqu'à l'obtention de ce consentement.</li>
+      <li>Un horodatage de votre consentement (date, heure, version de la politique) est automatiquement enregistré comme preuve.</li>
+    </ol>
+
+    <hr class="section-divider" />
+
+    <h3 style="font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:2px; color:var(--gold); margin-bottom:0.75rem;">Comment retirer votre consentement</h3>
+
+    <p>Vous pouvez retirer votre consentement à tout moment, sans condition, par l'un des moyens suivants :</p>
+
+    <div class="rights-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+      <div class="right-card">
+        <div class="right-card-icon">&#128241;</div>
+        <h4>Via SMS</h4>
+        <p>Répondez <strong>STOP</strong> à n'importe quel message texte reçu de notre part. Le retrait est immédiat et automatique.</p>
+      </div>
+      <div class="right-card">
+        <div class="right-card-icon">&#128140;</div>
+        <h4>Via courriel</h4>
+        <p>Envoyez un message à <strong>confidentialite@votediaspora.ca</strong> en indiquant votre numéro de téléphone. Traitement sous 48 heures.</p>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <p>Le retrait de votre consentement n'affecte pas la licéité du traitement effectué avant ce retrait. Il cesse toute communication future de notre part et déclenche le processus de suppression de vos données selon le calendrier décrit à la section 5.</p>
+    </div>
+  </section>
+
+  <!-- ── 11 RESPONSABLE DE LA PROTECTION ── -->
+  <section class="policy-section" id="responsable">
+    <div class="section-number">11</div>
+    <div class="section-heading">
+      <div class="section-icon">&#128100;</div>
+      <div class="section-heading-text">
+        <h2>Responsable de la protection</h2>
+        <div class="section-desc">Qui est responsable de la protection de vos données</div>
+      </div>
+    </div>
+
+    <p>Conformément à l'article 3.1 de la Loi 25, toute organisation doit désigner une personne responsable de la protection des renseignements personnels. Voici les coordonnées de notre responsable :</p>
+
+    <div class="contact-box">
+      <div class="contact-icon">&#127968;</div>
+      <div class="contact-details">
+        <h3>Communauté Béninoise Diaspora Canada</h3>
+        <p><strong>Responsable de la protection des renseignements personnels</strong></p>
+        <p>Plateforme Vote Diaspora — Bénin 2026</p>
+        <p style="margin-top:0.5rem;">
+          <strong>Courriel :</strong> <a href="mailto:confidentialite@votediaspora.ca">confidentialite@votediaspora.ca</a>
+        </p>
+        <p><strong>Délai de réponse :</strong> 5 jours ouvrables (accusé de réception) — 30 jours calendaires (réponse complète)</p>
+        <p style="margin-top:0.5rem; font-size:0.8rem !important; color:rgba(255,255,255,0.4) !important;">
+          Initiative citoyenne, non partisane, sans affiliation gouvernementale.
+        </p>
+      </div>
+    </div>
+
+    <p>Si vous n'êtes pas satisfait de la réponse obtenue, vous pouvez déposer une plainte auprès de la <strong>Commission d'accès à l'information du Québec (CAI)</strong> :</p>
+
+    <ul>
+      <li>Site web : <strong>www.cai.gouv.qc.ca</strong></li>
+      <li>Téléphone : 1 888 528-7741 (sans frais au Québec)</li>
+      <li>Adresse : 2045, rue Stanley, bureau 900, Montréal (Québec) H3A 2V4</li>
+    </ul>
+  </section>
+
+  <!-- ── 12 MODIFICATIONS ── -->
+  <section class="policy-section" id="modifications">
+    <div class="section-number">12</div>
+    <div class="section-heading">
+      <div class="section-icon">&#128221;</div>
+      <div class="section-heading-text">
+        <h2>Modifications de la politique</h2>
+        <div class="section-desc">Comment nous vous informons des mises à jour</div>
+      </div>
+    </div>
+
+    <p>La présente politique de confidentialité peut être mise à jour afin de refléter des changements dans nos pratiques de traitement, des évolutions législatives ou réglementaires, ou des modifications de nos prestataires techniques.</p>
+
+    <p>En cas de modification, nous nous engageons à :</p>
+
+    <ol>
+      <li>Publier la version révisée sur cette page avec une nouvelle date d'entrée en vigueur clairement indiquée en en-tête.</li>
+      <li>Si les modifications sont substantielles (ajout de nouvelles finalités, nouveaux tiers, réduction des droits des personnes concernées), vous en informer par SMS ou courriel dans les 7 jours précédant l'entrée en vigueur des changements.</li>
+      <li>Conserver un historique des versions précédentes, disponible sur demande à <a href="mailto:confidentialite@votediaspora.ca">confidentialite@votediaspora.ca</a>.</li>
+    </ol>
+
+    <div class="info-box">
+      <p>Étant donné la nature temporaire et limitée de cette Plateforme (active uniquement jusqu'au 11 juillet 2026), toute modification de la présente politique sera mineure et ne visera qu'à améliorer la clarté ou à se conformer à de nouvelles exigences légales. Aucune modification ne pourra introduire un usage commercial de vos données ou un partage avec de nouveaux tiers non mentionnés sans votre consentement explicite renouvelé.</p>
+    </div>
+  </section>
+
+  <!-- ── 13 DATE D'ENTRÉE EN VIGUEUR ── -->
+  <section class="policy-section" id="entree-vigueur">
+    <div class="section-number">13</div>
+    <div class="section-heading">
+      <div class="section-icon">&#128197;</div>
+      <div class="section-heading-text">
+        <h2>Date d'entrée en vigueur</h2>
+        <div class="section-desc">Version et historique de la politique</div>
+      </div>
+    </div>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Version</th>
+          <th>Date d'entrée en vigueur</th>
+          <th>Nature des changements</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>v1.0 (initiale)</strong></td>
+          <td><strong>2 avril 2026</strong></td>
+          <td>Publication initiale de la politique de confidentialité. Première mise en ligne de la Plateforme Vote Diaspora — Bénin 2026.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>La présente politique de confidentialité est entrée en vigueur le <strong>2 avril 2026</strong> et s'applique à toutes les inscriptions effectuées depuis cette date sur la Plateforme Vote Diaspora — Bénin 2026.</p>
+
+    <p>Cette politique a été rédigée en français, langue officielle de la province de Québec, Canada. Elle est gouvernée par les lois de la province de Québec et les lois fédérales applicables au Canada en matière de protection des renseignements personnels.</p>
+
+    <div class="success-box">
+      <p>Nous vous remercions de nous faire confiance et d'utiliser la Plateforme Vote Diaspora. Votre participation à la vie démocratique du Bénin compte. <strong>Ensemble, faisons entendre la voix de la diaspora — le 12 avril 2026.</strong></p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ── FOOTER ─────────────────────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-logos">
+    <span class="footer-powered">Powered by</span>
+
+    <!-- Logo 1 mini -->
+    <svg width="36" height="26" viewBox="0 0 120 85" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <text x="8" y="52" font-family="Arial Black,sans-serif" font-weight="900" font-size="52" fill="rgba(255,255,255,0.4)" letter-spacing="-2">26</text>
+      <circle cx="10" cy="14" r="5" fill="#C8102E" opacity="0.6"/>
+      <path d="M 30 72 Q 65 90 95 68" stroke="#F5C800" stroke-width="7" fill="none" stroke-linecap="round" opacity="0.6"/>
+      <polygon points="95,62 103,72 89,74" fill="#F5C800" opacity="0.6"/>
+    </svg>
+
+    <span style="color:rgba(255,255,255,0.1)">·</span>
+
+    <!-- Logo 2 mini -->
+    <svg width="68" height="26" viewBox="0 0 220 85" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <text x="0" y="58" font-family="Arial,sans-serif" font-weight="700" font-size="44" fill="rgba(255,255,255,0.35)" letter-spacing="-1">NE</text>
+      <line x1="95" y1="8" x2="135" y2="75" stroke="#F5C800" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
+      <line x1="95" y1="75" x2="135" y2="8" stroke="#009B3A" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
+      <text x="138" y="58" font-family="Arial,sans-serif" font-weight="700" font-size="44" fill="rgba(255,255,255,0.35)" letter-spacing="-1">US</text>
+      <text x="185" y="72" font-family="Arial,sans-serif" font-weight="700" font-size="16" fill="rgba(245,200,0,0.5)">229</text>
+    </svg>
+  </div>
+
+  <p>&#127464;&#127462;&nbsp; Initiative de la <strong>Diaspora Béninoise du Canada</strong> &nbsp;&#127463;&#127471;</p>
+  <p style="margin-top:0.5rem;">Élections législatives Bénin — 12 Avril 2026</p>
+
+  <div class="footer-links">
+    <a href="/">Accueil</a>
+    <a href="/politique-confidentialite.html" class="active-link">Politique de confidentialité</a>
+    <a href="mailto:confidentialite@votediaspora.ca">confidentialite@votediaspora.ca</a>
+  </div>
+
+  <p style="margin-top:1.25rem; font-size:0.65rem; color:rgba(255,255,255,0.12);">
+    Politique conforme à la Loi 25 (Québec) · Données utilisées uniquement pour les rappels de vote du 12 avril 2026 · Suppression définitive au plus tard le 11 juillet 2026
+  </p>
+</footer>
+
+<!-- ── BACK TO TOP ─────────────────────────────────────────────────────────── -->
+<a href="#top" class="back-to-top" id="back-to-top" aria-label="Retour en haut de page">&#8679;</a>
+
+<!-- ── SCRIPTS ─────────────────────────────────────────────────────────────── -->
+<script>
+  // Reading progress bar
+  const progressBar = document.getElementById('reading-progress');
+  const backToTop   = document.getElementById('back-to-top');
+
+  window.addEventListener('scroll', function () {
+    const scrollTop    = window.scrollY || document.documentElement.scrollTop;
+    const docHeight    = document.documentElement.scrollHeight - window.innerHeight;
+    const scrollPct    = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+
+    progressBar.style.width = scrollPct.toFixed(1) + '%';
+
+    if (scrollTop > 300) {
+      backToTop.classList.add('visible');
+    } else {
+      backToTop.classList.remove('visible');
+    }
+  }, { passive: true });
+
+  // Smooth scroll for back-to-top (already handled by CSS scroll-behavior,
+  // but this ensures compatibility with older browsers)
+  backToTop.addEventListener('click', function (e) {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+</script>
+
+</body>
+</html>
