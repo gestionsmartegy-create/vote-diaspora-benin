@@ -381,6 +381,21 @@
     }
     .footer-powered { font-size: 0.6rem; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.2); margin-right: 0.5rem; }
 
+    /* ── Phone row ────────────────────────────────────────────────── */
+    .phone-row {
+      display: flex; gap: 0;
+    }
+    .phone-code-select {
+      width: auto; min-width: 100px; max-width: 110px; flex-shrink: 0;
+      border-radius: 6px 0 0 6px !important;
+      border-right: none !important;
+      font-size: 0.88rem;
+    }
+    .phone-row input[type=tel] {
+      border-radius: 0 6px 6px 0 !important;
+      flex: 1;
+    }
+
     /* ── Consentement ─────────────────────────────────────────────── */
     .consent-box {
       background: rgba(200,16,46,0.07);
@@ -506,7 +521,7 @@
   <div class="hero-content">
     <div class="flag-strip">🇨🇦 <span>×</span> 🇧🇯</div>
 
-    <div class="hero-tag">Diaspora — Élections Bénin 2026</div>
+    <div class="hero-tag">Diaspora Béninoise Mondiale — Élections 2026</div>
 
     <h1>
       C'EST TON
@@ -566,12 +581,12 @@
     <div class="reason-card">
       <span class="reason-icon">🌍</span>
       <h3>La diaspora fait la différence</h3>
-      <p>Des milliers de Béninois au Canada. Ensemble, vous représentez une force électorale capable d'influencer le résultat.</p>
+      <p>Des milliers de Béninois à travers le monde. Ensemble, vous représentez une force électorale capable de changer le résultat.</p>
     </div>
     <div class="reason-card">
       <span class="reason-icon">🇨🇦</span>
       <h3>Porter les valeurs canadiennes</h3>
-      <p>La démocratie, la participation civique, la transparence — des valeurs que vous vivez ici, à apporter là-bas.</p>
+      <p>Où que vous soyez dans le monde, la démocratie, la participation civique et la transparence sont des valeurs à porter fièrement.</p>
     </div>
     <div class="reason-card">
       <span class="reason-icon">👨‍👩‍👧</span>
@@ -611,7 +626,7 @@
     <div class="policy-card">
       <span class="robot-icon">🤖</span>
       <h3>Campagne SMS intelligente</h3>
-      <p>Des messages personnalisés par région, envoyés au bon moment, pour maximiser la mobilisation de la diaspora à travers tout le Canada.</p>
+      <p>Des messages personnalisés par pays et par région, envoyés au bon moment, pour mobiliser la diaspora béninoise à travers le monde entier.</p>
     </div>
   </div>
 
@@ -644,41 +659,80 @@
             <input type="text" id="full_name" placeholder="Ex: Kouassi Adéchina" required />
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="phone">Téléphone (CA) *</label>
-              <input type="tel" id="phone" placeholder="+1 514 000 0000" required />
-              <div class="phone-hint">Format: +1 XXX XXX XXXX</div>
+          <div class="form-group">
+            <label for="phone">Numéro de téléphone *</label>
+            <div class="phone-row">
+              <select id="phone-code" class="phone-code-select" onchange="updatePhonePlaceholder()">
+                <option value="+1" data-flag="🇨🇦">🇨🇦 +1</option>
+                <option value="+1-us" data-flag="🇺🇸">🇺🇸 +1</option>
+                <option value="+33" data-flag="🇫🇷">🇫🇷 +33</option>
+                <option value="+32" data-flag="🇧🇪">🇧🇪 +32</option>
+                <option value="+41" data-flag="🇨🇭">🇨🇭 +41</option>
+                <option value="+44" data-flag="🇬🇧">🇬🇧 +44</option>
+                <option value="+49" data-flag="🇩🇪">🇩🇪 +49</option>
+                <option value="+31" data-flag="🇳🇱">🇳🇱 +31</option>
+                <option value="+39" data-flag="🇮🇹">🇮🇹 +39</option>
+                <option value="+34" data-flag="🇪🇸">🇪🇸 +34</option>
+                <option value="+351" data-flag="🇵🇹">🇵🇹 +351</option>
+                <option value="+229" data-flag="🇧🇯">🇧🇯 +229</option>
+                <option value="+225" data-flag="🇨🇮">🇨🇮 +225</option>
+                <option value="+221" data-flag="🇸🇳">🇸🇳 +221</option>
+                <option value="+241" data-flag="🇬🇦">🇬🇦 +241</option>
+                <option value="+212" data-flag="🇲🇦">🇲🇦 +212</option>
+                <option value="+237" data-flag="🇨🇲">🇨🇲 +237</option>
+                <option value="+243" data-flag="🇨🇩">🇨🇩 +243</option>
+                <option value="+61" data-flag="🇦🇺">🇦🇺 +61</option>
+                <option value="+971" data-flag="🇦🇪">🇦🇪 +971</option>
+              </select>
+              <input type="tel" id="phone" id="phone-num" placeholder="514 000 0000" required />
             </div>
-            <div class="form-group">
-              <label for="email">Courriel</label>
-              <input type="email" id="email" placeholder="optionnel" />
-            </div>
+            <div class="phone-hint" id="phone-hint">Saisissez votre numéro sans l'indicatif pays</div>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Courriel</label>
+            <input type="email" id="email" placeholder="optionnel" />
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label for="city">Ville *</label>
-              <input type="text" id="city" placeholder="Ex: Montréal" required />
+              <label for="province">Pays de résidence *</label>
+              <select id="province" required onchange="updateCityPlaceholder()">
+                <option value="" disabled selected>Choisir votre pays…</option>
+                <optgroup label="Amérique du Nord">
+                  <option value="Canada">🇨🇦 Canada</option>
+                  <option value="États-Unis">🇺🇸 États-Unis</option>
+                </optgroup>
+                <optgroup label="Europe">
+                  <option value="France">🇫🇷 France</option>
+                  <option value="Belgique">🇧🇪 Belgique</option>
+                  <option value="Suisse">🇨🇭 Suisse</option>
+                  <option value="Royaume-Uni">🇬🇧 Royaume-Uni</option>
+                  <option value="Allemagne">🇩🇪 Allemagne</option>
+                  <option value="Pays-Bas">🇳🇱 Pays-Bas</option>
+                  <option value="Italie">🇮🇹 Italie</option>
+                  <option value="Espagne">🇪🇸 Espagne</option>
+                  <option value="Portugal">🇵🇹 Portugal</option>
+                </optgroup>
+                <optgroup label="Afrique">
+                  <option value="Bénin">🇧🇯 Bénin</option>
+                  <option value="Côte d'Ivoire">🇨🇮 Côte d'Ivoire</option>
+                  <option value="Sénégal">🇸🇳 Sénégal</option>
+                  <option value="Gabon">🇬🇦 Gabon</option>
+                  <option value="Maroc">🇲🇦 Maroc</option>
+                  <option value="Cameroun">🇨🇲 Cameroun</option>
+                  <option value="RD Congo">🇨🇩 RD Congo</option>
+                </optgroup>
+                <optgroup label="Moyen-Orient / Océanie">
+                  <option value="Émirats arabes unis">🇦🇪 Émirats arabes unis</option>
+                  <option value="Australie">🇦🇺 Australie</option>
+                </optgroup>
+                <option value="Autre">🌍 Autre pays</option>
+              </select>
             </div>
             <div class="form-group">
-              <label for="province">Province *</label>
-              <select id="province" required>
-                <option value="" disabled selected>Choisir…</option>
-                <option>Alberta</option>
-                <option>Colombie-Britannique</option>
-                <option>Manitoba</option>
-                <option>Nouveau-Brunswick</option>
-                <option>Terre-Neuve-et-Labrador</option>
-                <option>Nouvelle-Écosse</option>
-                <option>Ontario</option>
-                <option>Île-du-Prince-Édouard</option>
-                <option>Québec</option>
-                <option>Saskatchewan</option>
-                <option>Territoires du Nord-Ouest</option>
-                <option>Nunavut</option>
-                <option>Yukon</option>
-              </select>
+              <label for="city">Ville / Région *</label>
+              <input type="text" id="city" placeholder="Ex: Montréal, Paris…" required />
             </div>
           </div>
 
@@ -688,7 +742,7 @@
               <input type="checkbox" id="consent-check" required />
               <span>
                 J'accepte la <a href="/politique-confidentialite.html" target="_blank">politique de confidentialité</a>
-                et consens à recevoir des <strong>SMS de rappel de vote</strong> sur mon numéro canadien.
+                et consens à recevoir des <strong>SMS de rappel de vote</strong> sur mon numéro.
                 Je comprends que mes données sont utilisées uniquement à des fins de mobilisation électorale
                 et ne seront jamais vendues ou partagées à des tiers.
               </span>
@@ -711,7 +765,7 @@
         <p class="sms-note">
           🤖 Un SMS de confirmation automatique vous sera envoyé.<br>
           Un rappel sera envoyé la veille du vote. Répondez <strong>STOP</strong> pour vous désinscrire à tout moment.<br>
-          <span style="opacity:0.5">Confidentiel · Loi 25 (Québec) · <a href="/politique-confidentialite.html" target="_blank" style="color:inherit;">Politique de confidentialité</a></span>
+          <span style="opacity:0.5">Confidentiel · Données protégées · <a href="/politique-confidentialite.html" target="_blank" style="color:inherit;">Politique de confidentialité</a></span>
         </p>
       </div>
 
@@ -754,7 +808,7 @@
     </svg>
   </div>
 
-  <p>🇨🇦&nbsp; Initiative de la <strong>Diaspora Béninoise du Canada</strong> &nbsp;🇧🇯</p>
+  <p>🌍&nbsp; Initiative de la <strong>Diaspora Béninoise Mondiale</strong> &nbsp;🇧🇯</p>
   <p style="margin-top:0.5rem;">Élections législatives Bénin — 12 Avril 2026</p>
   <p style="margin-top:1.2rem; font-size:0.65rem; color:rgba(255,255,255,0.12);">
     🤖 Rappels automatisés via SMS · Vos données sont utilisées uniquement pour les rappels de vote · Désincription disponible à tout moment.
@@ -802,9 +856,15 @@ document.getElementById('rsvp-form').addEventListener('submit', async (e) => {
   btn.disabled = true;
   btn.textContent = 'Envoi en cours…';
 
+  // Combine country code + number
+  const codeRaw = document.getElementById('phone-code').value;
+  const code = codeRaw === '+1-us' ? '+1' : codeRaw;
+  const numRaw = document.getElementById('phone').value.trim().replace(/[\s\-().]/g,'');
+  const fullPhone = code + numRaw;
+
   const payload = {
     full_name: document.getElementById('full_name').value.trim(),
-    phone:     document.getElementById('phone').value.trim(),
+    phone:     fullPhone,
     email:     document.getElementById('email').value.trim(),
     city:      document.getElementById('city').value.trim(),
     province:  document.getElementById('province').value
@@ -829,6 +889,62 @@ document.getElementById('rsvp-form').addEventListener('submit', async (e) => {
     errEl.style.display = 'block';
     btn.disabled        = false;
     btn.textContent     = '🗳️ Je m\'engage à voter le 12 Avril';
+  }
+});
+
+// ── Phone helpers ─────────────────────────────────────────────────────────────
+const PHONE_HINTS = {
+  '+1':    '514 000 0000 (10 chiffres)',
+  '+1-us': '212 000 0000 (10 chiffres)',
+  '+33':   '6 12 34 56 78',
+  '+32':   '470 00 00 00',
+  '+41':   '76 000 00 00',
+  '+44':   '7700 000000',
+  '+49':   '1512 3456789',
+  '+31':   '6 12345678',
+  '+39':   '312 345 6789',
+  '+34':   '612 345 678',
+  '+351':  '912 345 678',
+  '+229':  '96 00 00 00',
+  '+225':  '07 00 00 00 00',
+  '+221':  '77 000 00 00',
+  '+241':  '06 00 00 00',
+  '+212':  '6 12 34 56 78',
+  '+237':  '6 70 00 00 00',
+  '+243':  '81 000 0000',
+  '+61':   '412 345 678',
+  '+971':  '50 000 0000',
+};
+function updatePhonePlaceholder() {
+  const code = document.getElementById('phone-code').value;
+  const hint = PHONE_HINTS[code] || 'Votre numéro';
+  document.getElementById('phone').placeholder = hint;
+  document.getElementById('phone-hint').textContent = 'Saisissez votre numéro sans l\'indicatif pays';
+}
+function updateCityPlaceholder() {
+  const country = document.getElementById('province').value;
+  const el = document.getElementById('city');
+  const map = {
+    'Canada':'Montréal, Toronto, Vancouver…', 'France':'Paris, Lyon, Bordeaux…',
+    'Belgique':'Bruxelles, Liège…', 'Suisse':'Genève, Zurich…',
+    'États-Unis':'New York, Houston…', 'Royaume-Uni':'Londres, Manchester…',
+    'Bénin':'Cotonou, Porto-Novo…',
+  };
+  el.placeholder = map[country] || 'Votre ville ou région';
+}
+// Sync country select → phone code
+document.getElementById('province').addEventListener('change', function() {
+  const map = {
+    'Canada':'+1','États-Unis':'+1-us','France':'+33','Belgique':'+32',
+    'Suisse':'+41','Royaume-Uni':'+44','Allemagne':'+49','Pays-Bas':'+31',
+    'Italie':'+39','Espagne':'+34','Portugal':'+351','Bénin':'+229',
+    "Côte d'Ivoire":'+225','Sénégal':'+221','Gabon':'+241','Maroc':'+212',
+    'Cameroun':'+237','RD Congo':'+243','Émirats arabes unis':'+971','Australie':'+61'
+  };
+  const code = map[this.value];
+  if (code) {
+    document.getElementById('phone-code').value = code;
+    updatePhonePlaceholder();
   }
 });
 
