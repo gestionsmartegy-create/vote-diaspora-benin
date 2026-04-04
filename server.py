@@ -23,15 +23,22 @@ from twilio.base.exceptions import TwilioRestException
 load_dotenv()
 
 # ── Config ────────────────────────────────────────────────────────────────────
-TWILIO_SID   = os.getenv("TWILIO_ACCOUNT_SID", "")
-TWILIO_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
-TWILIO_FROM  = os.getenv("TWILIO_PHONE_NUMBER", "")
-ADMIN_PWD    = os.getenv("ADMIN_PASSWORD", "DORO2026")
-SECRET_KEY   = os.getenv("SECRET_KEY", secrets.token_hex(32))  # unique par déploiement
-DB_PATH      = os.path.join(os.path.dirname(__file__), "votes.db")
-SESSION_MAX_AGE = 60 * 60 * 8  # 8 heures
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "")   # AC... (Account SID)
+TWILIO_API_KEY     = os.getenv("TWILIO_API_KEY", "")        # SK... jamais dans le code
+TWILIO_API_SECRET  = os.getenv("TWILIO_API_SECRET", "")     # Secret jamais dans le code
+TWILIO_FROM        = os.getenv("TWILIO_PHONE_NUMBER", "")
+ADMIN_PWD          = os.getenv("ADMIN_PASSWORD", "DORO2026")
+SECRET_KEY         = os.getenv("SECRET_KEY", secrets.token_hex(32))
+DB_PATH            = os.path.join(os.path.dirname(__file__), "votes.db")
+SESSION_MAX_AGE    = 60 * 60 * 8  # 8 heures
 
-twilio   = TwilioClient(TWILIO_SID, TWILIO_TOKEN) if TWILIO_SID else None
+# API Key auth (révocable sans changer le Account SID)
+def _make_twilio():
+    if TWILIO_API_KEY and TWILIO_API_SECRET and TWILIO_ACCOUNT_SID:
+        return TwilioClient(TWILIO_API_KEY, TWILIO_API_SECRET, TWILIO_ACCOUNT_SID)
+    return None
+
+twilio = _make_twilio()
 signer   = URLSafeTimedSerializer(SECRET_KEY, salt="admin-session")
 
 # Track failed login attempts per IP
@@ -145,11 +152,36 @@ def add_security_headers(response):
     response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
     return response
 
+# Validation numéro E.164
+_PHONE_RE = re.compile(r'^\+[1-9]\d{7,14}$')
+
+# Anti-abus: compteur SMS par destinataire par jour
+_sms_sent_today: dict = {}
+MAX_SMS_PER_RECIPIENT_PER_DAY = 3
+MAX_SMS_BODY_LENGTH = 320
+
 def send_sms(to: str, body: str) -> dict:
+    """Envoie SMS avec protections anti-abus. Clés 100% via env vars."""
+    # 1. Validation format E.164
+    if not _PHONE_RE.match(to):
+        raise ValueError(f"Numéro invalide (format E.164 requis): {to}")
+    # 2. Limite longueur
+    if len(body) > MAX_SMS_BODY_LENGTH:
+        raise ValueError(f"Message trop long ({len(body)} chars, max {MAX_SMS_BODY_LENGTH})")
+    # 3. Anti-bombing: max 3 SMS/destinataire/jour
+    today = datetime.utcnow().date().isoformat()
+    key = f"{today}:{to}"
+    count = _sms_sent_today.get(key, 0)
+    if count >= MAX_SMS_PER_RECIPIENT_PER_DAY:
+        raise ValueError(f"Limite journalière atteinte pour ce numéro")
+    # 4. Mode mock si Twilio non configuré
     if not twilio or not TWILIO_FROM:
-        print(f"[SMS MOCK] To: {to}\n{body}\n")
-        return {"sid": "MOCK_SID"}
+        print(f"[SMS MOCK] To={to} | {body[:80]}")
+        _sms_sent_today[key] = count + 1
+        return {"sid": f"MOCK_{secrets.token_hex(8)}"}
+    # 5. Envoi réel via API Key (jamais hardcodée)
     msg = twilio.messages.create(body=body, from_=TWILIO_FROM, to=to)
+    _sms_sent_today[key] = count + 1
     return {"sid": msg.sid}
 
 # ── Routes ────────────────────────────────────────────────────────────────────
