@@ -143,11 +143,18 @@
     .empty-row td { text-align: center; color: var(--muted); padding: 3rem; }
 
     /* Tabs */
-    .tabs { display: flex; gap: 0; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
+    .tabs {
+      display: flex; gap: 0; margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
     .tab-btn {
       padding: 0.6rem 1.25rem; font-size: 0.82rem; font-weight: 600;
       background: transparent; border: none; color: var(--muted); cursor: pointer;
       border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 0.2s;
+      white-space: nowrap; flex-shrink: 0;
     }
     .tab-btn.active { color: var(--text); border-bottom-color: var(--red); }
     .tab-content { display: none; }
@@ -286,10 +293,16 @@
 <div class="login-screen" id="login-screen">
   <div class="login-card">
     <h1>🔐 Admin Panel</h1>
-    <p>Plateforme Vote Diaspora Canadienne — Bénin 2026</p>
-    <input type="password" id="pwd-input" placeholder="Mot de passe admin" />
-    <button class="btn-red" onclick="doLogin()">Accéder</button>
-    <div class="err" id="login-err"></div>
+    <p>Plateforme Vote Diaspora — Bénin 2026</p>
+    <div style="position:relative;">
+      <input type="password" id="pwd-input" placeholder="Mot de passe admin" style="padding-right:2.8rem;" />
+      <button onclick="togglePwd()" id="eye-btn" type="button"
+        style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;color:rgba(255,255,255,0.4);padding:0;line-height:1;">
+        👁
+      </button>
+    </div>
+    <button class="btn-red" id="login-btn" onclick="doLogin()">Accéder</button>
+    <div class="err" id="login-err" style="min-height:1.2rem;"></div>
   </div>
 </div>
 
@@ -559,28 +572,87 @@ const PRESETS = [
 ];
 
 // ── Auth ──────────────────────────────────────────────────────────────────
+function togglePwd() {
+  const inp = document.getElementById('pwd-input');
+  const btn = document.getElementById('eye-btn');
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁'; }
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('login-err');
+  el.textContent = msg;
+  el.style.color = '#ff7070';
+}
+
 async function doLogin() {
   const pwd = document.getElementById('pwd-input').value.trim();
-  if (!pwd) return;
-  const btn = document.querySelector('#login-screen .btn-red');
-  btn.disabled = true; btn.textContent = '…';
+  const errEl = document.getElementById('login-err');
+  errEl.textContent = '';
+
+  if (!pwd) {
+    showLoginError('⚠️ Entrez votre mot de passe.');
+    return;
+  }
+
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Vérification…';
+
   try {
-    const r = await fetch('/api/admin/login', { headers: { 'x-admin-token': pwd } });
+    const r = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'x-admin-token': pwd }
+    });
+
     if (r.ok) {
       TOKEN = pwd;
+      sessionStorage.setItem('admin_token', pwd);
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app').style.display = 'block';
       loadVoters();
+    } else if (r.status === 401) {
+      showLoginError('❌ Mot de passe incorrect. Réessayez.');
+      document.getElementById('pwd-input').focus();
+      document.getElementById('pwd-input').select();
     } else {
-      document.getElementById('login-err').textContent = '❌ Mot de passe incorrect.';
+      showLoginError(`❌ Erreur serveur (${r.status}). Réessayez.`);
     }
-  } catch {
-    document.getElementById('login-err').textContent = '❌ Erreur de connexion.';
+  } catch (e) {
+    showLoginError('❌ Impossible de joindre le serveur. Vérifiez votre connexion.');
   }
-  btn.disabled = false; btn.textContent = 'ACCÉDER';
+
+  btn.disabled = false;
+  btn.textContent = 'ACCÉDER';
 }
-document.getElementById('pwd-input').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-function logout() { TOKEN = ''; location.reload(); }
+
+document.getElementById('pwd-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+function logout() {
+  TOKEN = '';
+  sessionStorage.removeItem('admin_token');
+  // Reset UI proprement sans reload
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('pwd-input').value = '';
+  document.getElementById('pwd-input').type = 'password';
+  document.getElementById('eye-btn').textContent = '👁';
+  document.getElementById('login-err').textContent = '';
+  // Reset tabs
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+  document.querySelectorAll('.tab-content').forEach((c,i) => c.classList.toggle('active', i===0));
+}
+
+// Auto-reconnect si token en session
+(function autoLogin() {
+  const saved = sessionStorage.getItem('admin_token');
+  if (saved) {
+    document.getElementById('pwd-input').value = saved;
+    doLogin();
+  }
+})();
 
 // ── Tabs ──────────────────────────────────────────────────────────────────
 function switchTab(name) {
