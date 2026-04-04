@@ -1,0 +1,5 @@
+fastapi
+uvicorn[standard]
+twilio
+python-multipart
+aiofiles

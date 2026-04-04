@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Plateforme Vote Diaspora</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --red: #C8102E; --red-dark: #9B0B22; --gold: #F5C800;
+      --bg: #0d0203; --surface: #1a0608; --border: rgba(200,16,46,0.2);
+      --text: #fff; --muted: rgba(255,255,255,0.45);
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* Login */
+    .login-screen {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 2rem;
+    }
+    .login-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 2.5rem; width: 100%; max-width: 380px; text-align: center;
+    }
+    .login-card h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .login-card p { color: var(--muted); font-size: 0.85rem; margin-bottom: 2rem; }
+    .login-card input {
+      width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px; color: var(--text); font-size: 1rem; padding: 0.75rem 1rem;
+      margin-bottom: 1rem; outline: none; font-family: inherit;
+    }
+    .login-card input:focus { border-color: var(--red); }
+    .btn-red {
+      background: var(--red); color: #fff; border: none; border-radius: 6px;
+      padding: 0.75rem 1.5rem; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; width: 100%; text-transform: uppercase; letter-spacing: 1px;
+      transition: background 0.2s;
+    }
+    .btn-red:hover { background: #e0182f; }
+    .err { color: #ff7070; font-size: 0.8rem; margin-top: 0.5rem; }
+
+    /* App shell */
+    .app { display: none; }
+    header {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between;
+    }
+    header h1 { font-size: 1.1rem; font-weight: 700; }
+    header h1 span { color: var(--red); }
+    .header-actions { display: flex; gap: 0.75rem; }
+
+    .btn {
+      padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; border: none; transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-outline {
+      background: transparent; border: 1px solid var(--border); color: var(--text);
+    }
+    .btn-gold { background: var(--gold); color: #1a0608; }
+    .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.75rem; }
+
+    main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* Stats */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem; margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 1.25rem 1.5rem;
+    }
+    .stat-card .num { font-size: 2rem; font-weight: 800; color: var(--gold); }
+    .stat-card .lbl { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.2rem; }
+
+    /* SMS Blast */
+    .blast-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;
+    }
+    .blast-card h2 { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
+    .blast-row { display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; }
+    .blast-row .fg { flex: 1; min-width: 200px; }
+    label { display: block; font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.35rem; }
+    textarea, select, input {
+      width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px; color: var(--text); font-size: 0.88rem; padding: 0.65rem 0.9rem;
+      outline: none; font-family: inherit; resize: vertical;
+    }
+    textarea:focus, select:focus, input:focus { border-color: var(--red); }
+    select option { background: #1a0608; }
+    .char-count { font-size: 0.7rem; color: var(--muted); margin-top: 0.3rem; }
+    .tag-hint { font-size: 0.72rem; color: var(--muted); margin-top: 0.4rem; }
+    .tag-hint code { background: rgba(255,255,255,0.08); padding: 0.1rem 0.3rem; border-radius: 3px; color: var(--gold); }
+
+    .blast-result {
+      margin-top: 1rem; padding: 0.75rem; border-radius: 6px;
+      font-size: 0.85rem; display: none;
+    }
+    .blast-result.ok { background: rgba(0,180,80,0.15); border: 1px solid rgba(0,180,80,0.3); color: #4ade80; }
+    .blast-result.err { background: rgba(200,16,46,0.15); border: 1px solid rgba(200,16,46,0.3); color: #ff7070; }
+
+    /* Table */
+    .table-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; overflow: hidden;
+    }
+    .table-header {
+      padding: 1rem 1.5rem; display: flex; align-items: center;
+      justify-content: space-between; border-bottom: 1px solid var(--border);
+      flex-wrap: wrap; gap: 0.75rem;
+    }
+    .table-header h2 { font-size: 1rem; font-weight: 700; }
+    .search-input {
+      width: 220px; padding: 0.45rem 0.8rem; font-size: 0.82rem;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--muted); padding: 0.75rem 1rem; text-align: left;
+      border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    td {
+      padding: 0.75rem 1rem; font-size: 0.83rem; border-bottom: 1px solid rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.8);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(200,16,46,0.05); }
+    .badge {
+      display: inline-block; padding: 0.2rem 0.6rem; border-radius: 20px;
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .badge-green { background: rgba(0,180,80,0.2); color: #4ade80; }
+    .badge-gray  { background: rgba(255,255,255,0.08); color: var(--muted); }
+    .delete-btn {
+      background: transparent; border: 1px solid rgba(200,16,46,0.3);
+      color: var(--red); border-radius: 4px; padding: 0.25rem 0.6rem;
+      font-size: 0.72rem; cursor: pointer; transition: background 0.2s;
+    }
+    .delete-btn:hover { background: rgba(200,16,46,0.15); }
+    .empty-row td { text-align: center; color: var(--muted); padding: 3rem; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 0; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
+    .tab-btn {
+      padding: 0.6rem 1.25rem; font-size: 0.82rem; font-weight: 600;
+      background: transparent; border: none; color: var(--muted); cursor: pointer;
+      border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 0.2s;
+    }
+    .tab-btn.active { color: var(--text); border-bottom-color: var(--red); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── SMS Composer ─────────────────────────────────────────────── */
+    .composer-grid {
+      display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem;
+    }
+    @media(max-width:800px) { .composer-grid { grid-template-columns: 1fr; } }
+
+    .composer-panel, .target-panel {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.5rem;
+    }
+    .panel-title {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--red); margin-bottom: 1.25rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    /* Message textarea */
+    .msg-box {
+      width: 100%; min-height: 130px; background: rgba(255,255,255,0.05);
+      border: 1.5px solid rgba(255,255,255,0.1); border-radius: 8px;
+      color: var(--text); font-size: 0.95rem; padding: 0.9rem 1rem;
+      outline: none; font-family: inherit; resize: vertical; line-height: 1.5;
+      transition: border-color 0.2s;
+    }
+    .msg-box:focus { border-color: var(--red); }
+    .msg-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 0.4rem; }
+    .char-pill {
+      font-size: 0.72rem; color: var(--muted);
+      background: rgba(255,255,255,0.06); padding: 0.2rem 0.6rem; border-radius: 20px;
+    }
+    .char-pill.warn { color: var(--gold); }
+    .char-pill.over { color: #ff7070; }
+
+    /* Preset chips */
+    .preset-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.25rem; }
+    .chip {
+      background: rgba(200,16,46,0.1); border: 1px solid rgba(200,16,46,0.25);
+      color: rgba(255,255,255,0.8); font-size: 0.75rem; padding: 0.35rem 0.75rem;
+      border-radius: 20px; cursor: pointer; transition: all 0.15s;
+    }
+    .chip:hover { background: rgba(200,16,46,0.25); border-color: var(--red); color: #fff; }
+
+    /* Targeting */
+    .mode-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .mode-tab {
+      flex: 1; min-width: 70px; padding: 0.5rem 0.4rem; text-align: center;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;
+      color: var(--muted); transition: all 0.15s;
+    }
+    .mode-tab.active { background: rgba(200,16,46,0.2); border-color: var(--red); color: #fff; }
+
+    .target-block { display: none; }
+    .target-block.active { display: block; }
+
+    /* Count slider */
+    .slider-wrap { margin-top: 0.75rem; }
+    input[type=range] {
+      width: 100%; accent-color: var(--red); cursor: pointer;
+      height: 4px; padding: 0; background: transparent; border: none;
+    }
+    .slider-val {
+      font-size: 1.4rem; font-weight: 800; color: var(--gold);
+      text-align: center; margin-bottom: 0.25rem;
+    }
+
+    /* Contact checkboxes */
+    .contact-list {
+      max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.4rem;
+    }
+    .contact-list::-webkit-scrollbar { width: 4px; }
+    .contact-list::-webkit-scrollbar-thumb { background: rgba(200,16,46,0.3); border-radius: 4px; }
+    .contact-item {
+      display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.6rem;
+      border-radius: 6px; cursor: pointer; transition: background 0.1s;
+    }
+    .contact-item:hover { background: rgba(255,255,255,0.04); }
+    .contact-item input[type=checkbox] { accent-color: var(--red); width: 15px; height: 15px; cursor: pointer; }
+    .contact-name { font-size: 0.82rem; font-weight: 600; }
+    .contact-sub { font-size: 0.72rem; color: var(--muted); }
+    .select-all-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .select-all-row span { font-size: 0.72rem; color: var(--muted); }
+    .link-btn { background: none; border: none; color: var(--red); font-size: 0.72rem; cursor: pointer; padding: 0; }
+    .link-btn:hover { text-decoration: underline; }
+
+    /* Recipients preview */
+    .recipients-bar {
+      margin-top: 1.25rem; padding: 0.85rem 1rem;
+      background: rgba(200,16,46,0.1); border: 1px solid rgba(200,16,46,0.25);
+      border-radius: 8px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .recipients-count { font-size: 1.2rem; font-weight: 800; color: var(--gold); }
+    .recipients-label { font-size: 0.72rem; color: var(--muted); margin-top: 0.1rem; }
+
+    /* Send button */
+    .send-btn {
+      width: 100%; margin-top: 1.25rem; padding: 1rem;
+      background: var(--red); color: #fff; border: none; border-radius: 8px;
+      font-size: 1rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+      cursor: pointer; transition: background 0.2s, transform 0.1s;
+      box-shadow: 0 4px 20px rgba(200,16,46,0.4);
+    }
+    .send-btn:hover:not(:disabled) { background: #e0182f; transform: translateY(-1px); }
+    .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .result-bar {
+      margin-top: 1rem; padding: 0.75rem 1rem; border-radius: 8px;
+      font-size: 0.88rem; display: none;
+    }
+    .result-bar.ok { background: rgba(0,180,80,0.15); border: 1px solid rgba(0,180,80,0.3); color: #4ade80; }
+    .result-bar.err { background: rgba(200,16,46,0.15); border: 1px solid rgba(200,16,46,0.3); color: #ff7070; }
+
+    .export-btn { display: inline-block; }
+    @media(max-width:600px) {
+      header { flex-direction: column; gap: 0.75rem; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Login -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <h1>🔐 Admin Panel</h1>
+    <p>Plateforme Vote Diaspora Canadienne — Bénin 2026</p>
+    <input type="password" id="pwd-input" placeholder="Mot de passe admin" />
+    <button class="btn-red" onclick="doLogin()">Accéder</button>
+    <div class="err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- App -->
+<div class="app" id="app">
+  <header>
+    <h1>🗳️ Vote Diaspora <span>Admin</span></h1>
+    <div class="header-actions">
+      <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+      <button class="btn btn-outline btn-sm" onclick="logout()">Déconnexion</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card"><div class="num" id="a-total">—</div><div class="lbl">Total inscrits</div></div>
+      <div class="stat-card"><div class="num" id="a-sms">—</div><div class="lbl">SMS envoyés</div></div>
+      <div class="stat-card"><div class="num" id="a-prov">—</div><div class="lbl">Provinces actives</div></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('voters')">👥 Inscrits</button>
+      <button class="tab-btn" onclick="switchTab('blast')">📣 Campagne SMS</button>
+      <button class="tab-btn" onclick="switchTab('log')">📋 Journal SMS</button>
+    </div>
+
+    <!-- Tab: Voters -->
+    <div class="tab-content active" id="tab-voters">
+      <div class="table-card">
+        <div class="table-header">
+          <h2>Liste des inscrits</h2>
+          <input class="search-input" type="text" placeholder="Rechercher…" oninput="filterTable(this.value)" />
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Nom</th><th>Téléphone</th><th>Ville</th>
+                <th>Province</th><th>SMS</th><th>Inscrit le</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="voters-tbody">
+              <tr class="empty-row"><td colspan="8">Chargement…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Blast -->
+    <div class="tab-content" id="tab-blast">
+      <div class="composer-grid">
+
+        <!-- LEFT: Message composer -->
+        <div class="composer-panel">
+          <div class="panel-title">✏️ Composer le message</div>
+
+          <!-- Preset chips -->
+          <div style="margin-bottom:0.6rem;">
+            <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:1px;">Modèles rapides</div>
+            <div class="preset-chips">
+              <div class="chip" onclick="usePreset(0)">📅 J-7 Rappel</div>
+              <div class="chip" onclick="usePreset(1)">🌙 J-1 Veille</div>
+              <div class="chip" onclick="usePreset(2)">🔴 Jour J</div>
+              <div class="chip" onclick="usePreset(3)">🙏 Remerciement</div>
+            </div>
+          </div>
+
+          <textarea class="msg-box" id="blast-msg" maxlength="320"
+            placeholder="Tapez votre message ici…&#10;&#10;Astuce: utilisez {nom} pour personaliser avec le prénom."
+            oninput="updateCharCount()"></textarea>
+          <div class="msg-footer">
+            <div style="font-size:0.72rem;color:var(--muted)">
+              <code style="background:rgba(255,255,255,0.08);padding:0.1rem 0.4rem;border-radius:3px;color:var(--gold)">{nom}</code>
+              → prénom automatique
+            </div>
+            <div class="char-pill" id="char-pill">0 / 320</div>
+          </div>
+
+          <!-- Live preview -->
+          <div style="margin-top:1.25rem;">
+            <div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem;">Aperçu du message</div>
+            <div id="msg-preview" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:0.85rem 1rem;font-size:0.88rem;color:rgba(255,255,255,0.6);min-height:60px;white-space:pre-wrap;line-height:1.5;">
+              Votre message apparaîtra ici…
+            </div>
+          </div>
+
+          <div class="result-bar" id="blast-result"></div>
+        </div>
+
+        <!-- RIGHT: Targeting panel -->
+        <div class="target-panel">
+          <div class="panel-title">🎯 Ciblage</div>
+
+          <div class="mode-tabs">
+            <div class="mode-tab active" onclick="setMode('all')" id="mode-all">Tous</div>
+            <div class="mode-tab" onclick="setMode('province')" id="mode-province">Province</div>
+            <div class="mode-tab" onclick="setMode('count')" id="mode-count">Nombre</div>
+            <div class="mode-tab" onclick="setMode('manual')" id="mode-manual">Manuel</div>
+          </div>
+
+          <!-- Mode: Tous -->
+          <div class="target-block active" id="block-all">
+            <div style="font-size:0.82rem;color:rgba(255,255,255,0.5);line-height:1.5;">
+              Le SMS sera envoyé à <strong style="color:#fff">tous les inscrits</strong> confirmés.
+            </div>
+          </div>
+
+          <!-- Mode: Province -->
+          <div class="target-block" id="block-province">
+            <label>Sélectionner une province</label>
+            <select id="target-province" onchange="updateRecipientCount()">
+              <option value="">— Toutes —</option>
+              <option>Alberta</option><option>Colombie-Britannique</option>
+              <option>Manitoba</option><option>Nouveau-Brunswick</option>
+              <option>Terre-Neuve-et-Labrador</option><option>Nouvelle-Écosse</option>
+              <option>Ontario</option><option>Île-du-Prince-Édouard</option>
+              <option>Québec</option><option>Saskatchewan</option>
+              <option>Territoires du Nord-Ouest</option><option>Nunavut</option><option>Yukon</option>
+            </select>
+          </div>
+
+          <!-- Mode: Nombre -->
+          <div class="target-block" id="block-count">
+            <div class="slider-val" id="slider-display">10</div>
+            <div style="font-size:0.72rem;color:var(--muted);text-align:center;margin-bottom:0.75rem;">contacts (les premiers inscrits)</div>
+            <div class="slider-wrap">
+              <input type="range" id="count-slider" min="1" max="100" value="10"
+                oninput="updateSlider(this.value)" />
+              <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:var(--muted);margin-top:0.3rem;">
+                <span>1</span><span id="slider-max">100</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mode: Manuel -->
+          <div class="target-block" id="block-manual">
+            <div class="select-all-row">
+              <span id="manual-count-label">0 sélectionné(s)</span>
+              <div style="display:flex;gap:0.5rem;">
+                <button class="link-btn" onclick="selectAllContacts()">Tout</button>
+                <button class="link-btn" onclick="deselectAllContacts()">Aucun</button>
+              </div>
+            </div>
+            <div class="contact-list" id="contact-list">
+              <div style="color:var(--muted);font-size:0.82rem;text-align:center;padding:1rem;">Aucun inscrit</div>
+            </div>
+          </div>
+
+          <!-- Recipients summary -->
+          <div class="recipients-bar">
+            <div>
+              <div class="recipients-count" id="recipients-count">0</div>
+              <div class="recipients-label">destinataires</div>
+            </div>
+            <div style="font-size:1.5rem;opacity:0.5;">📱</div>
+          </div>
+
+          <button class="send-btn" id="send-btn" onclick="sendBlast()">
+            📤 Envoyer la campagne
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: SMS Log -->
+    <div class="tab-content" id="tab-log">
+      <div class="table-card">
+        <div class="table-header"><h2>Journal des SMS envoyés</h2></div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr><th>Date</th><th>Téléphone</th><th>Message</th><th>Statut</th><th>SID</th></tr>
+            </thead>
+            <tbody id="log-tbody">
+              <tr class="empty-row"><td colspan="5">Chargement…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+let TOKEN = '';
+let ALL_VOTERS = [];
+let currentMode = 'all';
+
+const PRESETS = [
+  "🇨🇦🇧🇯 {nom}, dans 7 jours c'est le vote! Le 12 Avril, faites entendre la voix de la diaspora canadienne du Bénin. C'est ton moment!",
+  "🗳️ {nom}, c'est DEMAIN! Les bureaux de vote ouvrent à 8h. Votre vote façonne l'avenir du Bénin. N'oubliez pas votre pièce d'identité!",
+  "🔴 AUJOURD'HUI c'est le 12 Avril! {nom}, allez voter maintenant. Chaque voix compte. La diaspora canadienne est avec vous 🇨🇦🇧🇯",
+  "🙏 {nom}, merci d'avoir voté! La diaspora canadienne du Bénin a fait entendre sa voix. Ensemble, nous façonnons l'avenir 🇨🇦🇧🇯"
+];
+
+// ── Auth ──────────────────────────────────────────────────────────────────
+function doLogin() {
+  TOKEN = 'demo';
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  loadVoters();
+}
+document.getElementById('pwd-input').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+function logout() { TOKEN = ''; location.reload(); }
+
+// ── Tabs ──────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector(`[onclick="switchTab('${name}')"]`).classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'log') loadLog();
+  if (name === 'blast') updateRecipientCount();
+}
+
+// ── Voters ────────────────────────────────────────────────────────────────
+async function loadVoters() {
+  try {
+    const r = await fetch('/api/admin/voters', { headers: { 'x-admin-token': TOKEN } });
+    if (!r.ok) return false;
+    ALL_VOTERS = await r.json();
+    renderVoters(ALL_VOTERS);
+    updateStats(ALL_VOTERS);
+    // Update slider max
+    const slider = document.getElementById('count-slider');
+    const max = Math.max(ALL_VOTERS.length, 1);
+    slider.max = max;
+    slider.value = Math.min(parseInt(slider.value), max);
+    document.getElementById('slider-max').textContent = max;
+    buildContactList();
+    updateRecipientCount();
+    return true;
+  } catch { return false; }
+}
+
+function updateStats(voters) {
+  document.getElementById('a-total').textContent = voters.length;
+  document.getElementById('a-sms').textContent = voters.reduce((s, v) => s + v.sms_sent, 0);
+  document.getElementById('a-prov').textContent = new Set(voters.map(v => v.province)).size;
+}
+
+function renderVoters(voters) {
+  const tbody = document.getElementById('voters-tbody');
+  if (!voters.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="8">Aucun inscrit pour l\'instant.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = voters.map(v => `
+    <tr>
+      <td style="color:rgba(255,255,255,0.3)">${v.id}</td>
+      <td><strong>${esc(v.full_name)}</strong></td>
+      <td style="font-family:monospace">${esc(v.phone)}</td>
+      <td>${esc(v.city)}</td>
+      <td>${esc(v.province)}</td>
+      <td>${v.sms_sent > 0
+        ? `<span class="badge badge-green">${v.sms_sent} ✓</span>`
+        : `<span class="badge badge-gray">0</span>`}</td>
+      <td style="color:rgba(255,255,255,0.4);font-size:0.75rem">${v.created_at.slice(0,16)}</td>
+      <td><button class="delete-btn" onclick="deleteVoter(${v.id})">✕</button></td>
+    </tr>
+  `).join('');
+}
+
+function filterTable(q) {
+  renderVoters(ALL_VOTERS.filter(v =>
+    v.full_name.toLowerCase().includes(q.toLowerCase()) ||
+    v.phone.includes(q) ||
+    v.city.toLowerCase().includes(q.toLowerCase()) ||
+    v.province.toLowerCase().includes(q.toLowerCase())
+  ));
+}
+
+async function deleteVoter(id) {
+  if (!confirm('Supprimer cet inscrit?')) return;
+  await fetch('/api/admin/voter/' + id, { method: 'DELETE', headers: { 'x-admin-token': TOKEN } });
+  ALL_VOTERS = ALL_VOTERS.filter(v => v.id !== id);
+  renderVoters(ALL_VOTERS);
+  updateStats(ALL_VOTERS);
+  buildContactList();
+  updateRecipientCount();
+}
+
+// ── SMS Composer ──────────────────────────────────────────────────────────
+function usePreset(i) {
+  document.getElementById('blast-msg').value = PRESETS[i];
+  updateCharCount();
+  switchTab('blast');
+}
+
+function updateCharCount() {
+  const msg = document.getElementById('blast-msg').value;
+  const len = msg.length;
+  const pill = document.getElementById('char-pill');
+  pill.textContent = `${len} / 320`;
+  pill.className = 'char-pill' + (len > 300 ? ' over' : len > 240 ? ' warn' : '');
+  // Live preview
+  const preview = document.getElementById('msg-preview');
+  const sample = msg.replace('{nom}', 'Kouassi');
+  preview.textContent = sample || 'Votre message apparaîtra ici…';
+  preview.style.color = msg ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.3)';
+}
+
+// ── Targeting ─────────────────────────────────────────────────────────────
+function setMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('mode-' + mode).classList.add('active');
+  document.querySelectorAll('.target-block').forEach(b => b.classList.remove('active'));
+  document.getElementById('block-' + mode).classList.add('active');
+  updateRecipientCount();
+}
+
+function updateSlider(val) {
+  document.getElementById('slider-display').textContent = val;
+  updateRecipientCount();
+}
+
+function updateRecipientCount() {
+  let count = 0;
+  if (currentMode === 'all') {
+    count = ALL_VOTERS.length;
+  } else if (currentMode === 'province') {
+    const prov = document.getElementById('target-province').value;
+    count = prov ? ALL_VOTERS.filter(v => v.province === prov).length : ALL_VOTERS.length;
+  } else if (currentMode === 'count') {
+    count = Math.min(parseInt(document.getElementById('count-slider').value) || 0, ALL_VOTERS.length);
+  } else if (currentMode === 'manual') {
+    count = document.querySelectorAll('.contact-checkbox:checked').length;
+  }
+  document.getElementById('recipients-count').textContent = count;
+}
+
+function buildContactList() {
+  const list = document.getElementById('contact-list');
+  if (!ALL_VOTERS.length) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;text-align:center;padding:1rem;">Aucun inscrit</div>';
+    return;
+  }
+  list.innerHTML = ALL_VOTERS.map(v => `
+    <label class="contact-item">
+      <input type="checkbox" class="contact-checkbox" value="${v.id}" onchange="updateManualCount()" />
+      <div>
+        <div class="contact-name">${esc(v.full_name)}</div>
+        <div class="contact-sub">${esc(v.city)}, ${esc(v.province)} · ${esc(v.phone)}</div>
+      </div>
+    </label>
+  `).join('');
+}
+
+function updateManualCount() {
+  const count = document.querySelectorAll('.contact-checkbox:checked').length;
+  document.getElementById('manual-count-label').textContent = `${count} sélectionné(s)`;
+  updateRecipientCount();
+}
+
+function selectAllContacts() {
+  document.querySelectorAll('.contact-checkbox').forEach(c => c.checked = true);
+  updateManualCount();
+}
+
+function deselectAllContacts() {
+  document.querySelectorAll('.contact-checkbox').forEach(c => c.checked = false);
+  updateManualCount();
+}
+
+// ── Send Blast ────────────────────────────────────────────────────────────
+async function sendBlast() {
+  const msg = document.getElementById('blast-msg').value.trim();
+  const resultEl = document.getElementById('blast-result');
+  const btn = document.getElementById('send-btn');
+
+  if (!msg) { alert('Veuillez taper un message.'); return; }
+
+  // Build payload based on mode
+  const payload = { message: msg };
+  let recipientCount = 0;
+
+  if (currentMode === 'all') {
+    recipientCount = ALL_VOTERS.length;
+  } else if (currentMode === 'province') {
+    const prov = document.getElementById('target-province').value;
+    if (prov) payload.province = prov;
+    recipientCount = prov ? ALL_VOTERS.filter(v => v.province === prov).length : ALL_VOTERS.length;
+  } else if (currentMode === 'count') {
+    const lim = parseInt(document.getElementById('count-slider').value);
+    payload.limit = lim;
+    recipientCount = Math.min(lim, ALL_VOTERS.length);
+  } else if (currentMode === 'manual') {
+    const ids = [...document.querySelectorAll('.contact-checkbox:checked')].map(c => parseInt(c.value));
+    if (!ids.length) { alert('Sélectionnez au moins un contact.'); return; }
+    payload.voter_ids = ids;
+    recipientCount = ids.length;
+  }
+
+  if (!recipientCount) { alert('Aucun destinataire trouvé.'); return; }
+
+  const preview = msg.replace('{nom}', 'Kouassi');
+  if (!confirm(`📤 Envoyer à ${recipientCount} contact${recipientCount>1?'s':''}?\n\n"${preview.substring(0,100)}${preview.length>100?'…':''}"`)) return;
+
+  resultEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = `⏳ Envoi à ${recipientCount} contacts…`;
+
+  try {
+    const r = await fetch('/api/admin/blast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': TOKEN },
+      body: JSON.stringify(payload)
+    });
+    const data = await r.json();
+    resultEl.className = 'result-bar ok';
+    resultEl.innerHTML = `✅ <strong>${data.sent}</strong> SMS envoyés avec succès.${data.failed > 0 ? ` <span style="color:#ff7070">${data.failed} échoués.</span>` : ''}`;
+    resultEl.style.display = 'block';
+    loadVoters();
+  } catch(e) {
+    resultEl.className = 'result-bar err';
+    resultEl.textContent = '❌ Erreur lors de l\'envoi. Vérifiez vos credentials Twilio.';
+    resultEl.style.display = 'block';
+  }
+  btn.disabled = false;
+  btn.textContent = '📤 Envoyer la campagne';
+}
+
+// ── SMS Log ────────────────────────────────────────────────────────────────
+async function loadLog() {
+  const r = await fetch('/api/admin/sms-log', { headers: { 'x-admin-token': TOKEN } });
+  const logs = await r.json();
+  const tbody = document.getElementById('log-tbody');
+  if (!logs.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Aucun SMS envoyé.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = logs.map(l => `
+    <tr>
+      <td style="font-size:0.75rem;color:rgba(255,255,255,0.4)">${l.sent_at.slice(0,16)}</td>
+      <td style="font-family:monospace;font-size:0.8rem">${esc(l.phone)}</td>
+      <td style="font-size:0.8rem;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.message)}</td>
+      <td>${l.status === 'sent'
+        ? '<span class="badge badge-green">✓ Envoyé</span>'
+        : '<span class="badge badge-gray">✗ Échoué</span>'}</td>
+      <td style="font-family:monospace;font-size:0.7rem;color:rgba(255,255,255,0.3)">${l.twilio_sid || '—'}</td>
+    </tr>
+  `).join('');
+}
+
+// ── Export CSV ─────────────────────────────────────────────────────────────
+function exportCSV() {
+  const headers = ['ID','Nom','Téléphone','Email','Ville','Province','SMS envoyés','Inscrit le'];
+  const rows = ALL_VOTERS.map(v => [v.id, v.full_name, v.phone, v.email||'', v.city, v.province, v.sms_sent, v.created_at]);
+  const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'inscrits-vote-benin.csv';
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
