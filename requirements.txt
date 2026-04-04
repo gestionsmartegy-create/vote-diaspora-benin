@@ -3,3 +3,6 @@ uvicorn[standard]
 twilio
 python-multipart
 aiofiles
+slowapi
+python-dotenv
+pydantic
