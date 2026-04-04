@@ -1,16 +1,18 @@
 import csv
 import io
 import os
+import secrets
 import sqlite3
 import re
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Header, Request, UploadFile, File
+from fastapi import FastAPI, HTTPException, Header, Request, UploadFile, File, Cookie, Response, Depends
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse, RedirectResponse, HTMLResponse
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from pydantic import BaseModel
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -25,9 +27,15 @@ TWILIO_SID   = os.getenv("TWILIO_ACCOUNT_SID", "")
 TWILIO_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
 TWILIO_FROM  = os.getenv("TWILIO_PHONE_NUMBER", "")
 ADMIN_PWD    = os.getenv("ADMIN_PASSWORD", "DORO2026")
+SECRET_KEY   = os.getenv("SECRET_KEY", secrets.token_hex(32))  # unique par déploiement
 DB_PATH      = os.path.join(os.path.dirname(__file__), "votes.db")
+SESSION_MAX_AGE = 60 * 60 * 8  # 8 heures
 
-twilio = TwilioClient(TWILIO_SID, TWILIO_TOKEN) if TWILIO_SID else None
+twilio   = TwilioClient(TWILIO_SID, TWILIO_TOKEN) if TWILIO_SID else None
+signer   = URLSafeTimedSerializer(SECRET_KEY, salt="admin-session")
+
+# Track failed login attempts per IP
+_login_attempts: dict = {}  # ip -> [timestamp, ...]
 
 # ── Database ──────────────────────────────────────────────────────────────────
 def get_db():
@@ -114,9 +122,28 @@ def normalize_phone(phone: str) -> str:
         digits = "+1" + digits
     return digits
 
-def require_admin(x_admin_token: str = Header(default="")):
-    if x_admin_token != ADMIN_PWD:
-        raise HTTPException(status_code=401, detail="Non autorisé. Mot de passe incorrect.")
+def verify_session(session: Optional[str]) -> bool:
+    """Vérifie le cookie de session signé."""
+    if not session:
+        return False
+    try:
+        signer.loads(session, max_age=SESSION_MAX_AGE)
+        return True
+    except (BadSignature, SignatureExpired):
+        return False
+
+def require_admin(request: Request, session: Optional[str] = Cookie(default=None, alias="admin_session")):
+    if not verify_session(session):
+        raise HTTPException(status_code=401, detail="Session expirée ou invalide. Reconnectez-vous.")
+
+def add_security_headers(response):
+    """Ajoute les headers de sécurité HTTP à toutes les réponses."""
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    return response
 
 def send_sms(to: str, body: str) -> dict:
     if not twilio or not TWILIO_FROM:
@@ -129,17 +156,146 @@ def send_sms(to: str, body: str) -> dict:
 
 @app.get("/")
 async def root():
-    return FileResponse("public/index.html")
+    resp = FileResponse("public/index.html")
+    return add_security_headers(resp)
 
 @app.get("/admin.html")
-async def admin_page():
-    return FileResponse("public/admin.html")
+async def admin_page(session: Optional[str] = Cookie(default=None, alias="admin_session")):
+    """Protège admin.html côté serveur — redirige vers /login si pas de session valide."""
+    if not verify_session(session):
+        return RedirectResponse(url="/login", status_code=302)
+    resp = FileResponse("public/admin.html")
+    return add_security_headers(resp)
 
-# POST /api/admin/login — validate password
+@app.get("/login")
+async def login_page():
+    """Page de login autonome — complètement séparée du panel admin."""
+    html = """<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Accès Admin — Vote Diaspora</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:#0f0305;color:#fff;min-height:100vh;
+         display:flex;align-items:center;justify-content:center;padding:1rem;}
+    .card{background:#1a0608;border:1px solid rgba(200,16,46,0.3);border-radius:14px;
+          padding:2.5rem 2rem;width:100%;max-width:360px;text-align:center;}
+    .card h1{font-size:1.4rem;margin-bottom:0.4rem;}
+    .card p{font-size:0.82rem;color:rgba(255,255,255,0.4);margin-bottom:2rem;}
+    .field{position:relative;margin-bottom:1rem;}
+    input[type=password],input[type=text]{
+      width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
+      border-radius:6px;color:#fff;font-size:1rem;padding:0.8rem 2.8rem 0.8rem 1rem;
+      outline:none;font-family:inherit;transition:border-color 0.2s;}
+    input:focus{border-color:#C8102E;}
+    .eye{position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);
+         background:none;border:none;cursor:pointer;font-size:1rem;color:rgba(255,255,255,0.35);padding:0;}
+    .btn{width:100%;background:#C8102E;color:#fff;border:none;border-radius:6px;
+         font-size:1rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;
+         padding:0.9rem;cursor:pointer;transition:background 0.2s;margin-top:0.25rem;}
+    .btn:hover{background:#e0182f;}
+    .btn:disabled{opacity:0.5;cursor:not-allowed;}
+    .err{color:#ff7070;font-size:0.78rem;margin-top:0.75rem;min-height:1.1rem;}
+    .attempts{font-size:0.72rem;color:rgba(255,255,255,0.2);margin-top:1rem;}
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>🔐 Accès Admin</h1>
+  <p>Plateforme Vote Diaspora — Bénin 2026</p>
+  <div class="field">
+    <input type="password" id="pwd" placeholder="Mot de passe" autocomplete="current-password"/>
+    <button class="eye" type="button" id="eye" onclick="toggleEye()">👁</button>
+  </div>
+  <button class="btn" id="btn" onclick="doLogin()">Accéder</button>
+  <div class="err" id="err"></div>
+  <div class="attempts" id="att"></div>
+</div>
+<script>
+let tries = 0;
+function toggleEye(){
+  const i=document.getElementById('pwd');
+  const e=document.getElementById('eye');
+  i.type=i.type==='password'?'text':'password';
+  e.textContent=i.type==='password'?'👁':'🙈';
+}
+document.getElementById('pwd').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+async function doLogin(){
+  const pwd=document.getElementById('pwd').value.trim();
+  const err=document.getElementById('err');
+  const btn=document.getElementById('btn');
+  err.textContent='';
+  if(!pwd){err.textContent='⚠️ Entrez le mot de passe.';return;}
+  btn.disabled=true;btn.textContent='⏳ Vérification…';
+  try{
+    const r=await fetch('/api/admin/login',{
+      method:'POST',
+      credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({password:pwd})
+    });
+    if(r.ok){window.location.replace('/admin.html');return;}
+    const d=await r.json();
+    tries++;
+    if(r.status===429){err.textContent='🚫 Trop de tentatives. Attendez quelques minutes.';}
+    else if(r.status===401){err.textContent='❌ Mot de passe incorrect.'+( tries>=3?' Vérifiez la casse.':'');}
+    else{err.textContent=`❌ Erreur ${r.status}. Réessayez.`;}
+    if(tries>0)document.getElementById('att').textContent=`${tries} tentative(s) échouée(s)`;
+    document.getElementById('pwd').focus();
+    document.getElementById('pwd').select();
+  }catch(e){err.textContent='❌ Impossible de joindre le serveur.';}
+  btn.disabled=false;btn.textContent='Accéder';
+}
+</script>
+</body>
+</html>"""
+    return HTMLResponse(content=html)
+
+# POST /api/admin/login — crée une session HTTP-only
 @app.post("/api/admin/login")
-async def admin_login(x_admin_token: str = Header(default="")):
-    if x_admin_token != ADMIN_PWD:
+@limiter.limit("5/minute")  # max 5 tentatives / minute / IP
+async def admin_login(request: Request, response: Response, body: dict):
+    ip = get_remote_address(request)
+    now = datetime.utcnow()
+
+    # Nettoyage des tentatives anciennes (> 10 min)
+    if ip in _login_attempts:
+        _login_attempts[ip] = [t for t in _login_attempts[ip] if (now - t).seconds < 600]
+
+    # Bloquer après 10 échecs en 10 min
+    if len(_login_attempts.get(ip, [])) >= 10:
+        raise HTTPException(status_code=429, detail="Trop de tentatives. Réessayez dans 10 minutes.")
+
+    pwd = body.get("password", "")
+    if pwd != ADMIN_PWD:
+        _login_attempts.setdefault(ip, []).append(now)
         raise HTTPException(status_code=401, detail="Mot de passe incorrect.")
+
+    # Réinitialiser compteur sur succès
+    _login_attempts.pop(ip, None)
+
+    # Créer token signé
+    token = signer.dumps({"login": now.isoformat()})
+
+    response.set_cookie(
+        key="admin_session",
+        value=token,
+        max_age=SESSION_MAX_AGE,
+        httponly=True,          # ← invisible au JS / DevTools Console
+        secure=True,            # ← HTTPS uniquement en prod
+        samesite="strict",      # ← protection CSRF
+        path="/",
+    )
+    add_security_headers(response)
+    return {"success": True}
+
+# POST /api/admin/logout
+@app.post("/api/admin/logout")
+async def admin_logout(response: Response):
+    response.delete_cookie(key="admin_session", path="/")
     return {"success": True}
 
 # POST /api/rsvp
@@ -188,8 +344,8 @@ async def stats():
 
 # GET /api/admin/voters
 @app.get("/api/admin/voters")
-async def list_voters(x_admin_token: str = Header(default="")):
-    require_admin(x_admin_token)
+async def list_voters(request: Request, session: Optional[str] = Cookie(default=None, alias="admin_session")):
+    require_admin(request, session)
     with get_db() as conn:
         rows = conn.execute("SELECT * FROM rsvps ORDER BY created_at DESC").fetchall()
     return [dict(r) for r in rows]
@@ -199,8 +355,8 @@ async def list_voters(x_admin_token: str = Header(default="")):
 
 # POST /api/admin/import-csv
 @app.post("/api/admin/import-csv")
-async def import_csv(file: UploadFile = File(...), x_admin_token: str = Header(default="")):
-    require_admin(x_admin_token)
+async def import_csv(request: Request, file: UploadFile = File(...), session: Optional[str] = Cookie(default=None, alias="admin_session")):
+    require_admin(request, session)
 
     if not file.filename.endswith(".csv"):
         raise HTTPException(status_code=400, detail="Fichier CSV requis (.csv).")
@@ -258,8 +414,8 @@ async def import_csv(file: UploadFile = File(...), x_admin_token: str = Header(d
 
 # GET /api/admin/external-contacts
 @app.get("/api/admin/external-contacts")
-async def list_external(x_admin_token: str = Header(default="")):
-    require_admin(x_admin_token)
+async def list_external(request: Request, session: Optional[str] = Cookie(default=None, alias="admin_session")):
+    require_admin(request, session)
     with get_db() as conn:
         rows = conn.execute("SELECT * FROM external_contacts ORDER BY imported_at DESC").fetchall()
     return [dict(r) for r in rows]
@@ -267,8 +423,8 @@ async def list_external(x_admin_token: str = Header(default="")):
 
 # DELETE /api/admin/external-contacts  — clear all imported contacts
 @app.delete("/api/admin/external-contacts")
-async def clear_external(x_admin_token: str = Header(default="")):
-    require_admin(x_admin_token)
+async def clear_external(request: Request, session: Optional[str] = Cookie(default=None, alias="admin_session")):
+    require_admin(request, session)
     with get_db() as conn:
         conn.execute("DELETE FROM external_contacts")
     return {"success": True}
@@ -276,8 +432,8 @@ async def clear_external(x_admin_token: str = Header(default="")):
 
 # GET /api/admin/csv-template  — download blank template
 @app.get("/api/admin/csv-template")
-async def csv_template(x_admin_token: str = Header(default="")):
-    require_admin(x_admin_token)
+async def csv_template(request: Request, session: Optional[str] = Cookie(default=None, alias="admin_session")):
+    require_admin(request, session)
     sample = "nom,telephone,ville,province\nKouassi Adéchina,+15140000001,Montréal,Québec\nAmina Kone,+14160000002,Toronto,Ontario\n"
     return StreamingResponse(
         io.BytesIO(sample.encode("utf-8-sig")),
@@ -288,8 +444,8 @@ async def csv_template(x_admin_token: str = Header(default="")):
 
 # POST /api/admin/blast
 @app.post("/api/admin/blast")
-async def sms_blast(data: BlastRequest, x_admin_token: str = Header(default="")):
-    require_admin(x_admin_token)
+async def sms_blast(request: Request, data: BlastRequest, session: Optional[str] = Cookie(default=None, alias="admin_session")):
+    require_admin(request, session)
     if not data.message:
         raise HTTPException(status_code=400, detail="Message requis.")
 
@@ -360,8 +516,8 @@ async def sms_blast(data: BlastRequest, x_admin_token: str = Header(default=""))
 
 # POST /api/admin/sms-single
 @app.post("/api/admin/sms-single")
-async def sms_single(data: SMSSingle, x_admin_token: str = Header(default="")):
-    require_admin(x_admin_token)
+async def sms_single(request: Request, data: SMSSingle, session: Optional[str] = Cookie(default=None, alias="admin_session")):
+    require_admin(request, session)
     try:
         result = send_sms(data.phone, data.message)
         with get_db() as conn:
@@ -376,8 +532,8 @@ async def sms_single(data: SMSSingle, x_admin_token: str = Header(default="")):
 
 # GET /api/admin/sms-log
 @app.get("/api/admin/sms-log")
-async def sms_log(x_admin_token: str = Header(default="")):
-    require_admin(x_admin_token)
+async def sms_log(request: Request, session: Optional[str] = Cookie(default=None, alias="admin_session")):
+    require_admin(request, session)
     with get_db() as conn:
         rows = conn.execute("SELECT * FROM sms_log ORDER BY sent_at DESC LIMIT 200").fetchall()
     return [dict(r) for r in rows]
@@ -385,8 +541,8 @@ async def sms_log(x_admin_token: str = Header(default="")):
 
 # DELETE /api/admin/voter/{id}
 @app.delete("/api/admin/voter/{voter_id}")
-async def delete_voter(voter_id: int, x_admin_token: str = Header(default="")):
-    require_admin(x_admin_token)
+async def delete_voter(request: Request, voter_id: int, session: Optional[str] = Cookie(default=None, alias="admin_session")):
+    require_admin(request, session)
     with get_db() as conn:
         conn.execute("DELETE FROM rsvps WHERE id=?", (voter_id,))
     return {"success": True}

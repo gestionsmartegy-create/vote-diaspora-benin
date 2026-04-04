@@ -6,3 +6,4 @@ aiofiles
 slowapi
 python-dotenv
 pydantic
+itsdangerous
