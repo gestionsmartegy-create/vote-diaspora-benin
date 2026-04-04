@@ -212,12 +212,12 @@ async def login_page():
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Accès Admin — Vote Diaspora</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',sans-serif;background:#0f0305;color:#fff;min-height:100vh;
+    body{font-family:'Montserrat',sans-serif;background:#080e1c;color:#fff;min-height:100vh;
          display:flex;align-items:center;justify-content:center;padding:1rem;}
-    .card{background:#1a0608;border:1px solid rgba(200,16,46,0.3);border-radius:14px;
+    .card{background:#0d1525;border:1px solid rgba(36,52,104,0.3);border-radius:14px;
           padding:2.5rem 2rem;width:100%;max-width:360px;text-align:center;}
     .card h1{font-size:1.4rem;margin-bottom:0.4rem;}
     .card p{font-size:0.82rem;color:rgba(255,255,255,0.4);margin-bottom:2rem;}
@@ -226,13 +226,13 @@ async def login_page():
       width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
       border-radius:6px;color:#fff;font-size:1rem;padding:0.8rem 2.8rem 0.8rem 1rem;
       outline:none;font-family:inherit;transition:border-color 0.2s;}
-    input:focus{border-color:#C8102E;}
+    input:focus{border-color:#243468;}
     .eye{position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);
          background:none;border:none;cursor:pointer;font-size:1rem;color:rgba(255,255,255,0.35);padding:0;}
-    .btn{width:100%;background:#C8102E;color:#fff;border:none;border-radius:6px;
+    .btn{width:100%;background:#243468;color:#fff;border:none;border-radius:6px;
          font-size:1rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;
          padding:0.9rem;cursor:pointer;transition:background 0.2s;margin-top:0.25rem;}
-    .btn:hover{background:#e0182f;}
+    .btn:hover{background:#1a2d6b;}
     .btn:disabled{opacity:0.5;cursor:not-allowed;}
     .err{color:#ff7070;font-size:0.78rem;margin-top:0.75rem;min-height:1.1rem;}
     .attempts{font-size:0.72rem;color:rgba(255,255,255,0.2);margin-top:1rem;}

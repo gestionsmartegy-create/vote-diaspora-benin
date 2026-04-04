@@ -10,22 +10,22 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --red:       #C8102E;
-      --red-dark:  #9B0B22;
-      --red-light: #E8203E;
-      --gold:      #F5C800;
+      --red:       #243468;
+      --red-dark:  #1a2d6b;
+      --red-light: #243468;
+      --gold:      #E3961C;
       --white:     #FFFFFF;
       --gray:      #6B7280;
-      --dark:      #0f0305;
+      --dark:      #080e1c;
     }
 
     html { scroll-behavior: smooth; }
-    body { font-family: 'Inter', sans-serif; background: var(--dark); color: var(--white); overflow-x: hidden; }
+    body { font-family: 'Montserrat', sans-serif; background: var(--dark); color: var(--white); overflow-x: hidden; }
 
     /* ── TOP BAR / POWERED BY ─────────────────────────────────────── */
     .topbar {
       background: rgba(0,0,0,0.85);
-      border-bottom: 1px solid rgba(200,16,46,0.25);
+      border-bottom: 1px solid rgba(36, 52, 104,0.25);
       padding: 0.6rem 2rem;
       display: flex;
       align-items: center;
@@ -56,8 +56,8 @@
     .hero {
       min-height: 100vh;
       background:
-        radial-gradient(ellipse at 70% 15%, rgba(200,16,46,0.45) 0%, transparent 55%),
-        radial-gradient(ellipse at 15% 85%, rgba(200,16,46,0.25) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 15%, rgba(36, 52, 104,0.45) 0%, transparent 55%),
+        radial-gradient(ellipse at 15% 85%, rgba(36, 52, 104,0.25) 0%, transparent 50%),
         var(--dark);
       position: relative;
       overflow: hidden;
@@ -73,7 +73,7 @@
       content: '';
       position: absolute;
       inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='80'%3E%3Ctext x='10' y='60' font-family='Bebas Neue,Arial Black,sans-serif' font-size='60' fill='rgba(200,16,46,0.06)' letter-spacing='6'%3EVOTE%3C/text%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='80'%3E%3Ctext x='10' y='60' font-family='Bebas Neue,Arial Black,sans-serif' font-size='60' fill='rgba(36, 52, 104,0.06)' letter-spacing='6'%3EVOTE%3C/text%3E%3C/svg%3E");
       background-size: 200px 80px;
       pointer-events: none;
       z-index: 0;
@@ -112,7 +112,7 @@
       line-height: 0.88;
       letter-spacing: 2px;
       color: var(--white);
-      text-shadow: 0 4px 40px rgba(200,16,46,0.5);
+      text-shadow: 0 4px 40px rgba(36, 52, 104,0.5);
     }
     .hero h1 .accent { color: var(--gold); display: block; }
 
@@ -134,7 +134,7 @@
       padding: 0.5rem 3rem;
       border: 5px solid var(--gold);
       transform: rotate(-4deg);
-      box-shadow: 8px 8px 0 var(--red), 12px 12px 40px rgba(200,16,46,0.35);
+      box-shadow: 8px 8px 0 var(--red), 12px 12px 40px rgba(36, 52, 104,0.35);
       display: inline-block;
     }
 
@@ -158,8 +158,8 @@
       font-family: 'Bebas Neue', sans-serif;
       font-size: 3rem; line-height: 1;
       color: var(--white);
-      background: rgba(200,16,46,0.18);
-      border: 1px solid rgba(200,16,46,0.4);
+      background: rgba(36, 52, 104,0.18);
+      border: 1px solid rgba(36, 52, 104,0.4);
       border-radius: 6px; width: 72px;
       display: flex; align-items: center; justify-content: center; padding: 0.3rem;
     }
@@ -180,10 +180,10 @@
       border: none;
       cursor: pointer;
       transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
-      box-shadow: 0 4px 24px rgba(200,16,46,0.55);
+      box-shadow: 0 4px 24px rgba(36, 52, 104,0.55);
       margin-top: 2.5rem;
     }
-    .cta-btn:hover { background: var(--red-light); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(200,16,46,0.6); }
+    .cta-btn:hover { background: var(--red-light); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(36, 52, 104,0.6); }
     .cta-btn:active { transform: translateY(0); }
 
     .cta-btn-outline {
@@ -216,7 +216,7 @@
 
     /* ── WHY SECTION ──────────────────────────────────────────────── */
     .why {
-      background: #110407;
+      background: #080e1c;
       padding: 6rem 1.5rem;
       text-align: center;
     }
@@ -236,12 +236,12 @@
       gap: 1.5rem; max-width: 960px; margin: 0 auto 3rem;
     }
     .reason-card {
-      background: rgba(200,16,46,0.07);
-      border: 1px solid rgba(200,16,46,0.18);
+      background: rgba(36, 52, 104,0.07);
+      border: 1px solid rgba(36, 52, 104,0.18);
       border-radius: 10px; padding: 2rem 1.5rem; text-align: left;
       transition: border-color 0.2s, background 0.2s, transform 0.2s;
     }
-    .reason-card:hover { border-color: rgba(200,16,46,0.45); background: rgba(200,16,46,0.12); transform: translateY(-3px); }
+    .reason-card:hover { border-color: rgba(36, 52, 104,0.45); background: rgba(36, 52, 104,0.12); transform: translateY(-3px); }
     .reason-icon { font-size: 2.4rem; margin-bottom: 1rem; display: block; }
     .reason-card h3 { font-weight: 700; font-size: 1.05rem; margin-bottom: 0.5rem; color: var(--white); }
     .reason-card p { font-size: 0.87rem; color: rgba(255,255,255,0.58); line-height: 1.65; }
@@ -266,11 +266,11 @@
     }
     .cta-band p { font-size: 1rem; color: rgba(255,255,255,0.8); margin-bottom: 0; position: relative; z-index: 1; }
     .cta-band .cta-btn { background: var(--gold); color: var(--dark); box-shadow: 0 4px 24px rgba(0,0,0,0.3); margin-top: 1.5rem; }
-    .cta-band .cta-btn:hover { background: #ffd700; }
+    .cta-band .cta-btn:hover { background: #E3961C; }
 
     /* ── POLICY / INFO SECTION ────────────────────────────────────── */
     .policy-section {
-      background: #0d0203;
+      background: #080e1c;
       padding: 5rem 1.5rem;
       text-align: center;
     }
@@ -292,7 +292,7 @@
 
     /* ── FORM SECTION ─────────────────────────────────────────────── */
     .form-section {
-      background: linear-gradient(160deg, #1a0608 0%, #080102 100%);
+      background: linear-gradient(160deg, #0d1525 0%, #080e1c 100%);
       padding: 6rem 1.5rem;
       position: relative; overflow: hidden;
     }
@@ -306,7 +306,7 @@
 
     .form-card {
       background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(200,16,46,0.3);
+      border: 1px solid rgba(36, 52, 104,0.3);
       border-radius: 14px; padding: 2.5rem 2rem;
       backdrop-filter: blur(12px);
     }
@@ -328,11 +328,11 @@
       border-radius: 6px; color: var(--white);
       font-size: 0.95rem; padding: 0.8rem 1rem;
       outline: none; transition: border-color 0.2s;
-      font-family: 'Inter', sans-serif;
+      font-family: 'Montserrat', sans-serif;
     }
     input::placeholder { color: rgba(255,255,255,0.22); }
-    input:focus, select:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(200,16,46,0.15); }
-    select option { background: #1a0608; }
+    input:focus, select:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(36, 52, 104,0.15); }
+    select option { background: #0d1525; }
 
     .phone-hint { font-size: 0.7rem; color: rgba(255,255,255,0.3); margin-top: 0.3rem; }
 
@@ -345,7 +345,7 @@
       padding: 1.1rem; cursor: pointer;
       transition: background 0.2s, transform 0.1s;
       margin-top: 0.5rem;
-      box-shadow: 0 4px 28px rgba(200,16,46,0.55);
+      box-shadow: 0 4px 28px rgba(36, 52, 104,0.55);
     }
     .submit-btn:hover { background: var(--red-light); transform: translateY(-1px); }
     .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
@@ -356,7 +356,7 @@
     }
 
     .alert { padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.88rem; margin-bottom: 1rem; display: none; }
-    .alert-error { background: rgba(200,16,46,0.18); border: 1px solid rgba(200,16,46,0.35); color: #ff8080; }
+    .alert-error { background: rgba(36, 52, 104,0.18); border: 1px solid rgba(36, 52, 104,0.35); color: #8899cc; }
     .alert-info  { background: rgba(245,200,0,0.12); border: 1px solid rgba(245,200,0,0.3); color: var(--gold); }
 
     .success-state { display: none; text-align: center; padding: 2rem 1rem; }
@@ -366,8 +366,8 @@
 
     /* ── FOOTER ───────────────────────────────────────────────────── */
     footer {
-      background: #050101;
-      border-top: 1px solid rgba(200,16,46,0.18);
+      background: #080e1c;
+      border-top: 1px solid rgba(36, 52, 104,0.18);
       padding: 3rem 1.5rem 2rem;
       text-align: center;
       font-size: 0.78rem;
@@ -398,8 +398,8 @@
 
     /* ── Consentement ─────────────────────────────────────────────── */
     .consent-box {
-      background: rgba(200,16,46,0.07);
-      border: 1px solid rgba(200,16,46,0.25);
+      background: rgba(36, 52, 104,0.07);
+      border: 1px solid rgba(36, 52, 104,0.25);
       border-radius: 8px;
       padding: 1rem 1.1rem;
       margin-bottom: 1.25rem;
@@ -484,11 +484,11 @@
       <!-- "26" text -->
       <text x="8" y="52" font-family="Arial Black, sans-serif" font-weight="900" font-size="52" fill="white" letter-spacing="-2">26</text>
       <!-- red dots -->
-      <circle cx="10" cy="14" r="5" fill="#C8102E"/>
-      <circle cx="95" cy="22" r="5" fill="#C8102E"/>
+      <circle cx="10" cy="14" r="5" fill="#243468"/>
+      <circle cx="95" cy="22" r="5" fill="#243468"/>
       <!-- yellow curved arrow -->
-      <path d="M 30 72 Q 65 90 95 68" stroke="#F5C800" stroke-width="7" fill="none" stroke-linecap="round"/>
-      <polygon points="95,62 103,72 89,74" fill="#F5C800"/>
+      <path d="M 30 72 Q 65 90 95 68" stroke="#E3961C" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <polygon points="95,62 103,72 89,74" fill="#E3961C"/>
     </svg>
   </div>
 
@@ -500,14 +500,14 @@
       <!-- NE text -->
       <text x="0" y="58" font-family="Arial, sans-serif" font-weight="700" font-size="44" fill="white" letter-spacing="-1">NE</text>
       <!-- X cross lines (colored) -->
-      <line x1="95" y1="8" x2="135" y2="75" stroke="#F5C800" stroke-width="6" stroke-linecap="round"/>
-      <line x1="95" y1="75" x2="115" y2="42" stroke="#009B3A" stroke-width="6" stroke-linecap="round"/>
-      <line x1="115" y1="42" x2="135" y2="8" stroke="#009B3A" stroke-width="6" stroke-linecap="round"/>
-      <line x1="113" y1="44" x2="135" y2="75" stroke="#C8102E" stroke-width="6" stroke-linecap="round"/>
+      <line x1="95" y1="8" x2="135" y2="75" stroke="#E3961C" stroke-width="6" stroke-linecap="round"/>
+      <line x1="95" y1="75" x2="115" y2="42" stroke="#243468" stroke-width="6" stroke-linecap="round"/>
+      <line x1="115" y1="42" x2="135" y2="8" stroke="#243468" stroke-width="6" stroke-linecap="round"/>
+      <line x1="113" y1="44" x2="135" y2="75" stroke="#243468" stroke-width="6" stroke-linecap="round"/>
       <!-- US text -->
       <text x="138" y="58" font-family="Arial, sans-serif" font-weight="700" font-size="44" fill="white" letter-spacing="-1">US</text>
       <!-- 229 subscript -->
-      <text x="185" y="72" font-family="Arial, sans-serif" font-weight="700" font-size="16" fill="#F5C800">229</text>
+      <text x="185" y="72" font-family="Arial, sans-serif" font-weight="700" font-size="16" fill="#E3961C">229</text>
     </svg>
   </div>
 </div>
@@ -793,16 +793,16 @@
     <!-- Logo 1 mini -->
     <svg width="36" height="26" viewBox="0 0 120 85" fill="none" xmlns="http://www.w3.org/2000/svg">
       <text x="8" y="52" font-family="Arial Black,sans-serif" font-weight="900" font-size="52" fill="rgba(255,255,255,0.4)" letter-spacing="-2">26</text>
-      <circle cx="10" cy="14" r="5" fill="#C8102E" opacity="0.6"/>
-      <path d="M 30 72 Q 65 90 95 68" stroke="#F5C800" stroke-width="7" fill="none" stroke-linecap="round" opacity="0.6"/>
-      <polygon points="95,62 103,72 89,74" fill="#F5C800" opacity="0.6"/>
+      <circle cx="10" cy="14" r="5" fill="#243468" opacity="0.6"/>
+      <path d="M 30 72 Q 65 90 95 68" stroke="#E3961C" stroke-width="7" fill="none" stroke-linecap="round" opacity="0.6"/>
+      <polygon points="95,62 103,72 89,74" fill="#E3961C" opacity="0.6"/>
     </svg>
     <span style="color:rgba(255,255,255,0.1)">·</span>
     <!-- Logo 2 mini -->
     <svg width="68" height="26" viewBox="0 0 220 85" fill="none" xmlns="http://www.w3.org/2000/svg">
       <text x="0" y="58" font-family="Arial,sans-serif" font-weight="700" font-size="44" fill="rgba(255,255,255,0.35)" letter-spacing="-1">NE</text>
-      <line x1="95" y1="8" x2="135" y2="75" stroke="#F5C800" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
-      <line x1="95" y1="75" x2="135" y2="8" stroke="#009B3A" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
+      <line x1="95" y1="8" x2="135" y2="75" stroke="#E3961C" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
+      <line x1="95" y1="75" x2="135" y2="8" stroke="#243468" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
       <text x="138" y="58" font-family="Arial,sans-serif" font-weight="700" font-size="44" fill="rgba(255,255,255,0.35)" letter-spacing="-1">US</text>
       <text x="185" y="72" font-family="Arial,sans-serif" font-weight="700" font-size="16" fill="rgba(245,200,0,0.5)">229</text>
     </svg>

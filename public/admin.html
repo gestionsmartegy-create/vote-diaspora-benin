@@ -8,11 +8,11 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --red: #C8102E; --red-dark: #9B0B22; --gold: #F5C800;
-      --bg: #0d0203; --surface: #1a0608; --border: rgba(200,16,46,0.2);
+      --red: #243468; --red-dark: #1a2d6b; --gold: #E3961C;
+      --bg: #080e1c; --surface: #0d1525; --border: rgba(36, 52, 104,0.2);
       --text: #fff; --muted: rgba(255,255,255,0.45);
     }
-    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    body { font-family: 'Montserrat', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
     /* Login */
     .login-screen {
@@ -37,7 +37,7 @@
       cursor: pointer; width: 100%; text-transform: uppercase; letter-spacing: 1px;
       transition: background 0.2s;
     }
-    .btn-red:hover { background: #e0182f; }
+    .btn-red:hover { background: #1a2d6b; }
     .err { color: #ff7070; font-size: 0.8rem; margin-top: 0.5rem; }
 
     /* App shell */
@@ -58,7 +58,7 @@
     .btn-outline {
       background: transparent; border: 1px solid var(--border); color: var(--text);
     }
-    .btn-gold { background: var(--gold); color: #1a0608; }
+    .btn-gold { background: var(--gold); color: #0d1525; }
     .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.75rem; }
 
     main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
@@ -90,7 +90,7 @@
       outline: none; font-family: inherit; resize: vertical;
     }
     textarea:focus, select:focus, input:focus { border-color: var(--red); }
-    select option { background: #1a0608; }
+    select option { background: #0d1525; }
     .char-count { font-size: 0.7rem; color: var(--muted); margin-top: 0.3rem; }
     .tag-hint { font-size: 0.72rem; color: var(--muted); margin-top: 0.4rem; }
     .tag-hint code { background: rgba(255,255,255,0.08); padding: 0.1rem 0.3rem; border-radius: 3px; color: var(--gold); }
@@ -100,7 +100,7 @@
       font-size: 0.85rem; display: none;
     }
     .blast-result.ok { background: rgba(0,180,80,0.15); border: 1px solid rgba(0,180,80,0.3); color: #4ade80; }
-    .blast-result.err { background: rgba(200,16,46,0.15); border: 1px solid rgba(200,16,46,0.3); color: #ff7070; }
+    .blast-result.err { background: rgba(36, 52, 104,0.15); border: 1px solid rgba(36, 52, 104,0.3); color: #ff7070; }
 
     /* Table */
     .table-card {
@@ -127,7 +127,7 @@
       color: rgba(255,255,255,0.8);
     }
     tr:last-child td { border-bottom: none; }
-    tr:hover td { background: rgba(200,16,46,0.05); }
+    tr:hover td { background: rgba(36, 52, 104,0.05); }
     .badge {
       display: inline-block; padding: 0.2rem 0.6rem; border-radius: 20px;
       font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
@@ -135,11 +135,11 @@
     .badge-green { background: rgba(0,180,80,0.2); color: #4ade80; }
     .badge-gray  { background: rgba(255,255,255,0.08); color: var(--muted); }
     .delete-btn {
-      background: transparent; border: 1px solid rgba(200,16,46,0.3);
+      background: transparent; border: 1px solid rgba(36, 52, 104,0.3);
       color: var(--red); border-radius: 4px; padding: 0.25rem 0.6rem;
       font-size: 0.72rem; cursor: pointer; transition: background 0.2s;
     }
-    .delete-btn:hover { background: rgba(200,16,46,0.15); }
+    .delete-btn:hover { background: rgba(36, 52, 104,0.15); }
     .empty-row td { text-align: center; color: var(--muted); padding: 3rem; }
 
     /* Tabs */
@@ -196,11 +196,11 @@
     /* Preset chips */
     .preset-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.25rem; }
     .chip {
-      background: rgba(200,16,46,0.1); border: 1px solid rgba(200,16,46,0.25);
+      background: rgba(36, 52, 104,0.1); border: 1px solid rgba(36, 52, 104,0.25);
       color: rgba(255,255,255,0.8); font-size: 0.75rem; padding: 0.35rem 0.75rem;
       border-radius: 20px; cursor: pointer; transition: all 0.15s;
     }
-    .chip:hover { background: rgba(200,16,46,0.25); border-color: var(--red); color: #fff; }
+    .chip:hover { background: rgba(36, 52, 104,0.25); border-color: var(--red); color: #fff; }
 
     /* Targeting */
     .mode-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
@@ -210,7 +210,7 @@
       border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;
       color: var(--muted); transition: all 0.15s;
     }
-    .mode-tab.active { background: rgba(200,16,46,0.2); border-color: var(--red); color: #fff; }
+    .mode-tab.active { background: rgba(36, 52, 104,0.2); border-color: var(--red); color: #fff; }
 
     .target-block { display: none; }
     .target-block.active { display: block; }
@@ -231,7 +231,7 @@
       max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.4rem;
     }
     .contact-list::-webkit-scrollbar { width: 4px; }
-    .contact-list::-webkit-scrollbar-thumb { background: rgba(200,16,46,0.3); border-radius: 4px; }
+    .contact-list::-webkit-scrollbar-thumb { background: rgba(36, 52, 104,0.3); border-radius: 4px; }
     .contact-item {
       display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.6rem;
       border-radius: 6px; cursor: pointer; transition: background 0.1s;
@@ -248,7 +248,7 @@
     /* Recipients preview */
     .recipients-bar {
       margin-top: 1.25rem; padding: 0.85rem 1rem;
-      background: rgba(200,16,46,0.1); border: 1px solid rgba(200,16,46,0.25);
+      background: rgba(36, 52, 104,0.1); border: 1px solid rgba(36, 52, 104,0.25);
       border-radius: 8px; display: flex; align-items: center; justify-content: space-between;
     }
     .recipients-count { font-size: 1.2rem; font-weight: 800; color: var(--gold); }
@@ -260,9 +260,9 @@
       background: var(--red); color: #fff; border: none; border-radius: 8px;
       font-size: 1rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
       cursor: pointer; transition: background 0.2s, transform 0.1s;
-      box-shadow: 0 4px 20px rgba(200,16,46,0.4);
+      box-shadow: 0 4px 20px rgba(36, 52, 104,0.4);
     }
-    .send-btn:hover:not(:disabled) { background: #e0182f; transform: translateY(-1px); }
+    .send-btn:hover:not(:disabled) { background: #1a2d6b; transform: translateY(-1px); }
     .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
     .result-bar {
@@ -270,7 +270,7 @@
       font-size: 0.88rem; display: none;
     }
     .result-bar.ok { background: rgba(0,180,80,0.15); border: 1px solid rgba(0,180,80,0.3); color: #4ade80; }
-    .result-bar.err { background: rgba(200,16,46,0.15); border: 1px solid rgba(200,16,46,0.3); color: #ff7070; }
+    .result-bar.err { background: rgba(36, 52, 104,0.15); border: 1px solid rgba(36, 52, 104,0.3); color: #ff7070; }
 
     .export-btn { display: inline-block; }
     .import-grid { grid-template-columns: 1fr 1fr; }
@@ -474,10 +474,10 @@
           <div class="panel-title">📥 Importer une liste externe</div>
 
           <!-- Drop zone -->
-          <div id="drop-zone" style="border:2px dashed rgba(200,16,46,0.4);border-radius:10px;padding:2.5rem 1.5rem;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:1.25rem;"
+          <div id="drop-zone" style="border:2px dashed rgba(36, 52, 104,0.4);border-radius:10px;padding:2.5rem 1.5rem;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:1.25rem;"
             onclick="document.getElementById('csv-file-input').click()"
-            ondragover="event.preventDefault();this.style.borderColor='var(--red)';this.style.background='rgba(200,16,46,0.08)'"
-            ondragleave="this.style.borderColor='rgba(200,16,46,0.4)';this.style.background=''"
+            ondragover="event.preventDefault();this.style.borderColor='var(--red)';this.style.background='rgba(36, 52, 104,0.08)'"
+            ondragleave="this.style.borderColor='rgba(36, 52, 104,0.4)';this.style.background=''"
             ondrop="handleDrop(event)">
             <div style="font-size:2.5rem;margin-bottom:0.5rem;">📄</div>
             <div style="font-weight:700;margin-bottom:0.25rem;">Glisser-déposer un fichier CSV</div>
@@ -506,7 +506,7 @@
         <!-- Imported contacts list -->
         <div class="target-panel">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
-            <div class="panel-title" style="margin-bottom:0;">📋 Contacts importés <span id="ext-badge" style="background:rgba(200,16,46,0.3);color:var(--gold);border-radius:20px;padding:0.1rem 0.6rem;font-size:0.72rem;margin-left:0.5rem;">0</span></div>
+            <div class="panel-title" style="margin-bottom:0;">📋 Contacts importés <span id="ext-badge" style="background:rgba(36, 52, 104,0.3);color:var(--gold);border-radius:20px;padding:0.1rem 0.6rem;font-size:0.72rem;margin-left:0.5rem;">0</span></div>
             <button class="btn btn-outline btn-sm" onclick="clearExternal()" style="font-size:0.72rem;">🗑 Effacer tout</button>
           </div>
 
@@ -515,7 +515,7 @@
           </div>
 
           <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.06);">
-            <button class="send-btn" style="margin-top:0;background:var(--gold);color:#1a0608;" onclick="switchTab('blast');setMode('external')">
+            <button class="send-btn" style="margin-top:0;background:var(--gold);color:#0d1525;" onclick="switchTab('blast');setMode('external')">
               📣 Envoyer un SMS à cette liste →
             </button>
           </div>
@@ -862,7 +862,7 @@ function handleFileSelect(input) {
 function handleDrop(e) {
   e.preventDefault();
   const dz = document.getElementById('drop-zone');
-  dz.style.borderColor = 'rgba(200,16,46,0.4)'; dz.style.background = '';
+  dz.style.borderColor = 'rgba(36, 52, 104,0.4)'; dz.style.background = '';
   const f = e.dataTransfer.files[0];
   if (f && f.name.endsWith('.csv')) { pendingFile = f; showPendingFile(); }
   else alert('Veuillez déposer un fichier .csv');
@@ -894,8 +894,8 @@ async function uploadCSV() {
       pendingFile = null;
       loadExternalContacts();
     } else {
-      res.style.background = 'rgba(200,16,46,0.15)';
-      res.style.border = '1px solid rgba(200,16,46,0.3)';
+      res.style.background = 'rgba(36, 52, 104,0.15)';
+      res.style.border = '1px solid rgba(36, 52, 104,0.3)';
       res.style.color = '#ff7070';
       res.textContent = '❌ ' + (data.detail || 'Erreur import.');
     }
