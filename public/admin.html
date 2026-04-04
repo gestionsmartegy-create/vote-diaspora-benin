@@ -559,10 +559,10 @@ function apiFetch(url, opts = {}) {
 }
 
 const PRESETS = [
-  "🇨🇦🇧🇯 {nom}, dans 7 jours c'est le vote! Le 12 Avril, faites entendre la voix de la diaspora canadienne du Bénin. C'est ton moment!",
-  "🗳️ {nom}, c'est DEMAIN! Les bureaux de vote ouvrent à 8h. Votre vote façonne l'avenir du Bénin. N'oubliez pas votre pièce d'identité!",
-  "🔴 AUJOURD'HUI c'est le 12 Avril! {nom}, allez voter maintenant. Chaque voix compte. La diaspora canadienne est avec vous 🇨🇦🇧🇯",
-  "🙏 {nom}, merci d'avoir voté! La diaspora canadienne du Bénin a fait entendre sa voix. Ensemble, nous façonnons l'avenir 🇨🇦🇧🇯"
+  "🗳️ {nom}, dans 7 jours c'est le vote! Le 12 Avril, faites entendre la voix de la diaspora béninoise. C'est ton moment — Plus loin ensemble 🇧🇯\nRépondez STOP pour vous désabonner.",
+  "🌙 {nom}, c'est DEMAIN! Les bureaux de vote ouvrent à 8h. Votre vote façonne l'avenir du Bénin. N'oubliez pas votre pièce d'identité 🇧🇯\nRépondez STOP pour vous désabonner.",
+  "🔴 AUJOURD'HUI c'est le 12 Avril! {nom}, allez voter maintenant. Chaque voix compte. La diaspora béninoise est avec vous 🇧🇯 Plus loin ensemble!\nRépondez STOP pour vous désabonner.",
+  "🙏 {nom}, merci d'avoir voté! La diaspora béninoise a fait entendre sa voix. Ensemble, nous façonnons l'avenir du Bénin 🇧🇯 Plus loin ensemble!\nRépondez STOP pour vous désabonner."
 ];
 
 // ── Auth ──────────────────────────────────────────────────────────────────
@@ -801,7 +801,7 @@ async function sendBlast() {
 
   try {
     const r = await apiFetch('/api/admin/blast', {
-      method: 'POST'
+      method: 'POST',
       body: JSON.stringify(payload)
     });
     const data = await r.json();
@@ -882,7 +882,7 @@ async function uploadCSV() {
   res.style.display = 'none';
   try {
     const r = await apiFetch('/api/admin/import-csv', {
-      method: 'POST'
+      method: 'POST',
       body: form
     });
     const data = await r.json();

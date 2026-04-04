@@ -27,7 +27,7 @@ TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "")   # AC... (Account SID)
 TWILIO_API_KEY     = os.getenv("TWILIO_API_KEY", "")        # SK... jamais dans le code
 TWILIO_API_SECRET  = os.getenv("TWILIO_API_SECRET", "")     # Secret jamais dans le code
 TWILIO_FROM        = os.getenv("TWILIO_PHONE_NUMBER", "")
-ADMIN_PWD          = os.getenv("ADMIN_PASSWORD", "DORO2026")
+ADMIN_PWD          = os.getenv("ADMIN_PASSWORD", "")  # must be set via env var
 SECRET_KEY         = os.getenv("SECRET_KEY", secrets.token_hex(32))
 DB_PATH            = os.path.join(os.path.dirname(__file__), "votes.db")
 SESSION_MAX_AGE    = 60 * 60 * 8  # 8 heures
@@ -91,9 +91,7 @@ def init_db():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
-    print(f"\n🗳️  Serveur élections démarré")
-    print(f"📊 Admin: /admin.html")
-    print(f"🔑 Password admin: {ADMIN_PWD}\n")
+    print(f"\n🗳️  Serveur élections démarré — admin: /login\n")
     yield
 
 limiter = Limiter(key_func=get_remote_address)
@@ -354,15 +352,24 @@ async def rsvp(request: Request, data: RSVPCreate):
     except sqlite3.IntegrityError:
         raise HTTPException(status_code=409, detail="Ce numéro est déjà inscrit.")
 
+    # ── SMS de confirmation avec mention légale de désinscription ─────────────
+    nom_court = data.full_name.split()[0]
+    sms_confirmation = (
+        f"🗳️ Merci {nom_court}! Votre engagement pour les élections du Bénin "
+        f"(12 AVRIL) est confirmé. La diaspora béninoise fait entendre sa voix!\n"
+        f"Plus loin ensemble 🇧🇯\n"
+        f"Répondez STOP pour vous désabonner."
+    )
     try:
-        send_sms(
-            phone,
-            f"🇨🇦🇧🇯 Merci {data.full_name.split()[0]}! "
-            f"Votre intention de vote pour les élections du Bénin (12 AVRIL) est enregistrée. "
-            f"C'est ton moment — la diaspora fait entendre sa voix!"
-        )
+        result = send_sms(phone, sms_confirmation)
+        with get_db() as conn:
+            conn.execute(
+                "INSERT INTO sms_log (phone, message, status, twilio_sid) VALUES (?,?,?,?)",
+                (phone, sms_confirmation, "sent", result["sid"])
+            )
+            conn.execute("UPDATE rsvps SET sms_sent=1 WHERE id=?", (rid,))
     except Exception as e:
-        print(f"SMS confirmation error: {e}")
+        print(f"[SMS confirmation] {e}")
 
     return {"success": True, "id": rid, "message": "Inscription confirmée!"}
 
@@ -526,8 +533,13 @@ async def sms_blast(request: Request, data: BlastRequest, session: Optional[str]
     failed = 0
     errors = []
 
+    # Ajouter mention STOP légale si absente du message
+    base_message = data.message
+    if "STOP" not in base_message.upper():
+        base_message = base_message.rstrip() + "\nRépondez STOP pour vous désabonner."
+
     for c in contacts:
-        msg = data.message.replace("{nom}", c["full_name"].split()[0])
+        msg = base_message.replace("{nom}", c["full_name"].split()[0])
         try:
             result = send_sms(c["phone"], msg)
             table = "rsvps" if c["source"] == "rsvp" else "external_contacts"
@@ -555,11 +567,14 @@ async def sms_blast(request: Request, data: BlastRequest, session: Optional[str]
 async def sms_single(request: Request, data: SMSSingle, session: Optional[str] = Cookie(default=None, alias="admin_session")):
     require_admin(request, session)
     try:
-        result = send_sms(data.phone, data.message)
+        msg = data.message
+        if "STOP" not in msg.upper():
+            msg = msg.rstrip() + "\nRépondez STOP pour vous désabonner."
+        result = send_sms(data.phone, msg)
         with get_db() as conn:
             conn.execute(
                 "INSERT INTO sms_log (phone, message, status, twilio_sid) VALUES (?,?,?,?)",
-                (data.phone, data.message, "sent", result["sid"])
+                (data.phone, msg, "sent", result["sid"])
             )
         return {"success": True, "sid": result["sid"]}
     except Exception as e:
