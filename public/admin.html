@@ -266,9 +266,18 @@
     .result-bar.err { background: rgba(200,16,46,0.15); border: 1px solid rgba(200,16,46,0.3); color: #ff7070; }
 
     .export-btn { display: inline-block; }
+    .import-grid { grid-template-columns: 1fr 1fr; }
+    @media(max-width:800px) { .import-grid { grid-template-columns: 1fr !important; } }
     @media(max-width:600px) {
       header { flex-direction: column; gap: 0.75rem; align-items: flex-start; }
     }
+    .ext-contact-item {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0.5rem 0.6rem; border-radius:6px; background:rgba(255,255,255,0.03);
+      border:1px solid rgba(255,255,255,0.06); font-size:0.8rem;
+    }
+    .ext-contact-item .name { font-weight:600; }
+    .ext-contact-item .sub { font-size:0.7rem; color:rgba(255,255,255,0.4); margin-top:0.1rem; }
   </style>
 </head>
 <body>
@@ -306,6 +315,7 @@
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('voters')">👥 Inscrits</button>
       <button class="tab-btn" onclick="switchTab('blast')">📣 Campagne SMS</button>
+      <button class="tab-btn" onclick="switchTab('import')">📥 Importer CSV</button>
       <button class="tab-btn" onclick="switchTab('log')">📋 Journal SMS</button>
     </div>
 
@@ -382,6 +392,7 @@
             <div class="mode-tab" onclick="setMode('province')" id="mode-province">Province</div>
             <div class="mode-tab" onclick="setMode('count')" id="mode-count">Nombre</div>
             <div class="mode-tab" onclick="setMode('manual')" id="mode-manual">Manuel</div>
+            <div class="mode-tab" onclick="setMode('external')" id="mode-external">📥 Importés</div>
           </div>
 
           <!-- Mode: Tous -->
@@ -432,6 +443,14 @@
             </div>
           </div>
 
+          <!-- Mode: External (imported CSV) -->
+          <div class="target-block" id="block-external">
+            <div style="font-size:0.82rem;color:rgba(255,255,255,0.5);line-height:1.6;">
+              Le SMS sera envoyé à <strong style="color:var(--gold)" id="ext-count-label">0</strong> contact(s) importés via CSV.<br>
+              <span style="font-size:0.75rem;">Importez d'abord votre liste dans l'onglet <strong style="color:#fff">📥 Importer CSV</strong>.</span>
+            </div>
+          </div>
+
           <!-- Recipients summary -->
           <div class="recipients-bar">
             <div>
@@ -444,6 +463,64 @@
           <button class="send-btn" id="send-btn" onclick="sendBlast()">
             📤 Envoyer la campagne
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Import CSV -->
+    <div class="tab-content" id="tab-import">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;max-width:900px;" class="import-grid">
+
+        <!-- Upload card -->
+        <div class="composer-panel">
+          <div class="panel-title">📥 Importer une liste externe</div>
+
+          <!-- Drop zone -->
+          <div id="drop-zone" style="border:2px dashed rgba(200,16,46,0.4);border-radius:10px;padding:2.5rem 1.5rem;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:1.25rem;"
+            onclick="document.getElementById('csv-file-input').click()"
+            ondragover="event.preventDefault();this.style.borderColor='var(--red)';this.style.background='rgba(200,16,46,0.08)'"
+            ondragleave="this.style.borderColor='rgba(200,16,46,0.4)';this.style.background=''"
+            ondrop="handleDrop(event)">
+            <div style="font-size:2.5rem;margin-bottom:0.5rem;">📄</div>
+            <div style="font-weight:700;margin-bottom:0.25rem;">Glisser-déposer un fichier CSV</div>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.4);">ou cliquer pour choisir</div>
+          </div>
+          <input type="file" id="csv-file-input" accept=".csv" style="display:none" onchange="handleFileSelect(this)" />
+
+          <div id="import-result" style="display:none;margin-bottom:1rem;padding:0.85rem 1rem;border-radius:8px;font-size:0.88rem;"></div>
+
+          <button class="send-btn" style="margin-top:0;" onclick="uploadCSV()">📤 Importer les contacts</button>
+
+          <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.06);">
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.35);margin-bottom:0.75rem;text-transform:uppercase;letter-spacing:1px;">Format du fichier</div>
+            <div style="background:rgba(0,0,0,0.3);border-radius:6px;padding:0.75rem 1rem;font-family:monospace;font-size:0.78rem;color:rgba(255,255,255,0.6);line-height:1.8;">
+              nom,telephone,ville,province<br>
+              Kouassi Kone,+15140001234,Montréal,Québec<br>
+              Amina Bio,+14160005678,Toronto,Ontario
+            </div>
+            <a id="template-dl-btn" href="#" onclick="downloadTemplate(event)"
+              style="display:inline-block;margin-top:0.75rem;font-size:0.78rem;color:var(--gold);text-decoration:none;">
+              ⬇ Télécharger le template CSV
+            </a>
+          </div>
+        </div>
+
+        <!-- Imported contacts list -->
+        <div class="target-panel">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+            <div class="panel-title" style="margin-bottom:0;">📋 Contacts importés <span id="ext-badge" style="background:rgba(200,16,46,0.3);color:var(--gold);border-radius:20px;padding:0.1rem 0.6rem;font-size:0.72rem;margin-left:0.5rem;">0</span></div>
+            <button class="btn btn-outline btn-sm" onclick="clearExternal()" style="font-size:0.72rem;">🗑 Effacer tout</button>
+          </div>
+
+          <div id="ext-contact-list" style="max-height:380px;overflow-y:auto;display:flex;flex-direction:column;gap:0.35rem;">
+            <div style="color:rgba(255,255,255,0.3);font-size:0.82rem;text-align:center;padding:2rem;">Aucun contact importé</div>
+          </div>
+
+          <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.06);">
+            <button class="send-btn" style="margin-top:0;background:var(--gold);color:#1a0608;" onclick="switchTab('blast');setMode('external')">
+              📣 Envoyer un SMS à cette liste →
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -470,7 +547,9 @@
 <script>
 let TOKEN = '';
 let ALL_VOTERS = [];
+let ALL_EXTERNAL = [];
 let currentMode = 'all';
+let pendingFile = null;
 
 const PRESETS = [
   "🇨🇦🇧🇯 {nom}, dans 7 jours c'est le vote! Le 12 Avril, faites entendre la voix de la diaspora canadienne du Bénin. C'est ton moment!",
@@ -480,11 +559,25 @@ const PRESETS = [
 ];
 
 // ── Auth ──────────────────────────────────────────────────────────────────
-function doLogin() {
-  TOKEN = 'demo';
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-  loadVoters();
+async function doLogin() {
+  const pwd = document.getElementById('pwd-input').value.trim();
+  if (!pwd) return;
+  const btn = document.querySelector('#login-screen .btn-red');
+  btn.disabled = true; btn.textContent = '…';
+  try {
+    const r = await fetch('/api/admin/login', { headers: { 'x-admin-token': pwd } });
+    if (r.ok) {
+      TOKEN = pwd;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      loadVoters();
+    } else {
+      document.getElementById('login-err').textContent = '❌ Mot de passe incorrect.';
+    }
+  } catch {
+    document.getElementById('login-err').textContent = '❌ Erreur de connexion.';
+  }
+  btn.disabled = false; btn.textContent = 'ACCÉDER';
 }
 document.getElementById('pwd-input').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 function logout() { TOKEN = ''; location.reload(); }
@@ -497,10 +590,12 @@ function switchTab(name) {
   document.getElementById('tab-' + name).classList.add('active');
   if (name === 'log') loadLog();
   if (name === 'blast') updateRecipientCount();
+  if (name === 'import') loadExternalContacts();
 }
 
 // ── Voters ────────────────────────────────────────────────────────────────
 async function loadVoters() {
+  await loadExternalContacts();  // also refresh external on load
   try {
     const r = await fetch('/api/admin/voters', { headers: { 'x-admin-token': TOKEN } });
     if (!r.ok) return false;
@@ -612,6 +707,9 @@ function updateRecipientCount() {
     count = Math.min(parseInt(document.getElementById('count-slider').value) || 0, ALL_VOTERS.length);
   } else if (currentMode === 'manual') {
     count = document.querySelectorAll('.contact-checkbox:checked').length;
+  } else if (currentMode === 'external') {
+    count = ALL_EXTERNAL.length;
+    document.getElementById('ext-count-label').textContent = count;
   }
   document.getElementById('recipients-count').textContent = count;
 }
@@ -676,6 +774,10 @@ async function sendBlast() {
     if (!ids.length) { alert('Sélectionnez au moins un contact.'); return; }
     payload.voter_ids = ids;
     recipientCount = ids.length;
+  } else if (currentMode === 'external') {
+    if (!ALL_EXTERNAL.length) { alert('Aucun contact importé. Allez dans l\'onglet "Importer CSV".'); return; }
+    payload.source = 'external';
+    recipientCount = ALL_EXTERNAL.length;
   }
 
   if (!recipientCount) { alert('Aucun destinataire trouvé.'); return; }
@@ -742,6 +844,112 @@ function exportCSV() {
 
 function esc(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── CSV Import ─────────────────────────────────────────────────────────────
+function handleFileSelect(input) {
+  if (input.files[0]) { pendingFile = input.files[0]; showPendingFile(); }
+}
+function handleDrop(e) {
+  e.preventDefault();
+  const dz = document.getElementById('drop-zone');
+  dz.style.borderColor = 'rgba(200,16,46,0.4)'; dz.style.background = '';
+  const f = e.dataTransfer.files[0];
+  if (f && f.name.endsWith('.csv')) { pendingFile = f; showPendingFile(); }
+  else alert('Veuillez déposer un fichier .csv');
+}
+function showPendingFile() {
+  const dz = document.getElementById('drop-zone');
+  dz.innerHTML = `<div style="font-size:2rem;margin-bottom:0.4rem;">✅</div>
+    <div style="font-weight:700;color:var(--gold)">${esc(pendingFile.name)}</div>
+    <div style="font-size:0.75rem;color:rgba(255,255,255,0.4);margin-top:0.25rem;">Prêt à importer · ${(pendingFile.size/1024).toFixed(1)} Ko</div>`;
+}
+
+async function uploadCSV() {
+  const res = document.getElementById('import-result');
+  if (!pendingFile) { alert('Sélectionnez un fichier CSV d\'abord.'); return; }
+  const form = new FormData();
+  form.append('file', pendingFile);
+  res.style.display = 'none';
+  try {
+    const r = await fetch('/api/admin/import-csv', {
+      method: 'POST',
+      headers: { 'x-admin-token': TOKEN },
+      body: form
+    });
+    const data = await r.json();
+    if (r.ok) {
+      res.style.background = 'rgba(0,180,80,0.15)';
+      res.style.border = '1px solid rgba(0,180,80,0.3)';
+      res.style.color = '#4ade80';
+      res.innerHTML = `✅ <strong>${data.imported}</strong> contacts importés.${data.skipped ? ` <span style="color:rgba(255,255,255,0.4)">${data.skipped} ignorés.</span>` : ''}`;
+      pendingFile = null;
+      loadExternalContacts();
+    } else {
+      res.style.background = 'rgba(200,16,46,0.15)';
+      res.style.border = '1px solid rgba(200,16,46,0.3)';
+      res.style.color = '#ff7070';
+      res.textContent = '❌ ' + (data.detail || 'Erreur import.');
+    }
+    res.style.display = 'block';
+  } catch(e) {
+    res.style.display = 'block'; res.style.color = '#ff7070';
+    res.textContent = '❌ Erreur réseau.';
+  }
+}
+
+async function loadExternalContacts() {
+  try {
+    const r = await fetch('/api/admin/external-contacts', { headers: { 'x-admin-token': TOKEN } });
+    if (!r.ok) return;
+    ALL_EXTERNAL = await r.json();
+    renderExternalContacts();
+    // update ext-count-label in blast tab
+    const el = document.getElementById('ext-count-label');
+    if (el) el.textContent = ALL_EXTERNAL.length;
+    const badge = document.getElementById('ext-badge');
+    if (badge) badge.textContent = ALL_EXTERNAL.length;
+  } catch {}
+}
+
+function renderExternalContacts() {
+  const list = document.getElementById('ext-contact-list');
+  if (!list) return;
+  if (!ALL_EXTERNAL.length) {
+    list.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:0.82rem;text-align:center;padding:2rem;">Aucun contact importé</div>';
+    return;
+  }
+  list.innerHTML = ALL_EXTERNAL.map(c => `
+    <div class="ext-contact-item">
+      <div>
+        <div class="name">${esc(c.full_name)}</div>
+        <div class="sub">${esc(c.phone)}${c.city ? ' · ' + esc(c.city) : ''}${c.province ? ', ' + esc(c.province) : ''}</div>
+      </div>
+      <span style="font-size:0.7rem;color:rgba(255,255,255,0.25);">${c.sms_sent > 0 ? '✓ ' + c.sms_sent : ''}</span>
+    </div>
+  `).join('');
+}
+
+async function clearExternal() {
+  if (!ALL_EXTERNAL.length) return;
+  if (!confirm(`Effacer les ${ALL_EXTERNAL.length} contacts importés?`)) return;
+  await fetch('/api/admin/external-contacts', { method: 'DELETE', headers: { 'x-admin-token': TOKEN } });
+  ALL_EXTERNAL = [];
+  renderExternalContacts();
+  const badge = document.getElementById('ext-badge');
+  if (badge) badge.textContent = 0;
+  const el = document.getElementById('ext-count-label');
+  if (el) el.textContent = 0;
+}
+
+async function downloadTemplate(e) {
+  e.preventDefault();
+  const r = await fetch('/api/admin/csv-template', { headers: { 'x-admin-token': TOKEN } });
+  const blob = await r.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url;
+  a.download = 'template-contacts-vote.csv'; a.click();
+  URL.revokeObjectURL(url);
 }
 </script>
 </body>
