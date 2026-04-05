@@ -988,7 +988,7 @@ function setCookieChoice(choice) {
 
 // Share
 function shareIntent() {
-  const text = "🇨🇦🇧🇯 Je viens de m'inscrire pour voter aux élections du Bénin le 12 Avril 2026! La diaspora fait entendre sa voix. Rejoins-moi: " + window.location.href;
+  const text = "Je viens de m'inscrire pour voter aux élections du Bénin le 12 Avril 2026! La diaspora fait entendre sa voix. Rejoins-moi: https://www.groupe26pourwadagni.com/";
   if (navigator.share) { navigator.share({ title:"Vote Bénin 12 Avril", text }); }
   else { navigator.clipboard.writeText(text).then(()=>alert('Lien copié! Partagez-le avec vos proches.')); }
 }
