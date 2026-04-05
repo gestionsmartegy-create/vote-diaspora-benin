@@ -255,12 +255,33 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.mount("/static", StaticFiles(directory="public"), name="static")
 
 # ── Schemas ───────────────────────────────────────────────────────────────────
+RECAPTCHA_SECRET = os.getenv("RECAPTCHA_SECRET_KEY", "")
+RECAPTCHA_MIN_SCORE = 0.5  # score minimum (0.0 = bot, 1.0 = humain)
+
+async def verify_recaptcha(token: str) -> bool:
+    """Vérifie le token reCAPTCHA v3 côté serveur."""
+    if not RECAPTCHA_SECRET or not token:
+        return True  # bypass si pas configuré (dev mode)
+    import urllib.request, urllib.parse, json as _json
+    data = urllib.parse.urlencode({
+        "secret": RECAPTCHA_SECRET,
+        "response": token
+    }).encode()
+    try:
+        req = urllib.request.Request("https://www.google.com/recaptcha/api/siteverify", data=data)
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            result = _json.loads(resp.read())
+            return result.get("success") and result.get("score", 0) >= RECAPTCHA_MIN_SCORE
+    except Exception:
+        return True  # fail open pour ne pas bloquer si Google down
+
 class RSVPCreate(BaseModel):
     full_name: str
     phone: str
     email: Optional[str] = None
     city: str
     province: str
+    recaptcha_token: Optional[str] = None
 
 class BlastRequest(BaseModel):
     message: str
@@ -489,6 +510,12 @@ async def admin_logout(response: Response):
 @app.post("/api/rsvp")
 @limiter.limit("10/minute")
 async def rsvp(request: Request, data: RSVPCreate):
+    # Vérification reCAPTCHA v3
+    if RECAPTCHA_SECRET:
+        is_human = await verify_recaptcha(data.recaptcha_token or "")
+        if not is_human:
+            raise HTTPException(status_code=403, detail="Vérification anti-bot échouée. Rafraîchissez la page.")
+
     if not data.full_name or not data.phone or not data.city or not data.province:
         raise HTTPException(status_code=400, detail="Champs obligatoires manquants.")
 

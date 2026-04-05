@@ -457,6 +457,8 @@
       .cookie-btn { flex: 1; text-align: center; }
     }
   </style>
+  <!-- reCAPTCHA v3 -->
+  <script src="https://www.google.com/recaptcha/api.js?render=RECAPTCHA_SITE_KEY"></script>
 </head>
 <body>
 
@@ -893,6 +895,15 @@ document.getElementById('rsvp-form').addEventListener('submit', async (e) => {
   };
 
   try {
+    // reCAPTCHA v3 token
+    const recaptchaToken = await new Promise((resolve, reject) => {
+      if (typeof grecaptcha === 'undefined') { resolve(''); return; }
+      grecaptcha.ready(() => {
+        grecaptcha.execute('RECAPTCHA_SITE_KEY', {action: 'rsvp'}).then(resolve).catch(reject);
+      });
+    });
+    payload.recaptcha_token = recaptchaToken;
+
     const res  = await fetch('/api/rsvp', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
     const data = await res.json();
 
