@@ -883,7 +883,8 @@ document.getElementById('rsvp-form').addEventListener('submit', async (e) => {
   // Combine country code + number
   const codeRaw = document.getElementById('phone-code').value;
   const code = codeRaw === '+1-us' ? '+1' : codeRaw;
-  const numRaw = document.getElementById('phone').value.trim().replace(/[\s\-().]/g,'');
+  let numRaw = document.getElementById('phone').value.trim().replace(/[\s\-().+]/g,'');
+  // Nettoie si l utilisateur a inclu le code pays dans le champ
   const fullPhone = code + numRaw;
 
   const payload = {
