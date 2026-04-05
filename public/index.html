@@ -458,7 +458,7 @@
     }
   </style>
   <!-- reCAPTCHA v3 -->
-  <script src="https://www.google.com/recaptcha/api.js?render=RECAPTCHA_SITE_KEY"></script>
+  <script src="https://www.google.com/recaptcha/api.js?render=6LcGaKgsAAAAAGdpnL5uu2aouMr-tjlTp8jQDrqw"></script>
 </head>
 <body>
 
@@ -899,7 +899,7 @@ document.getElementById('rsvp-form').addEventListener('submit', async (e) => {
     const recaptchaToken = await new Promise((resolve, reject) => {
       if (typeof grecaptcha === 'undefined') { resolve(''); return; }
       grecaptcha.ready(() => {
-        grecaptcha.execute('RECAPTCHA_SITE_KEY', {action: 'rsvp'}).then(resolve).catch(reject);
+        grecaptcha.execute('6LcGaKgsAAAAAGdpnL5uu2aouMr-tjlTp8jQDrqw', {action: 'rsvp'}).then(resolve).catch(reject);
       });
     });
     payload.recaptcha_token = recaptchaToken;
