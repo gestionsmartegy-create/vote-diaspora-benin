@@ -49,14 +49,164 @@ signer   = URLSafeTimedSerializer(SECRET_KEY, salt="admin-session")
 _login_attempts: dict = {}  # ip -> [timestamp, ...]
 
 # ── Database ──────────────────────────────────────────────────────────────────
-def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+DATABASE_URL = os.getenv("DATABASE_URL", "")  # Railway injecte automatiquement
+
+USE_POSTGRES = bool(DATABASE_URL)
+
+if USE_POSTGRES:
+    import psycopg2
+    import psycopg2.extras
+    import psycopg2.errors
+
+    class _PgConnWrapper:
+        """Thin wrapper that makes psycopg2 connections work as context managers
+        the same way SQLite connections do (auto-commit on __exit__)."""
+        def __init__(self, conn):
+            self._conn = conn
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            if exc_type is None:
+                self._conn.commit()
+            else:
+                self._conn.rollback()
+            self._conn.close()
+            return False
+
+        # Delegate attribute access to the underlying connection so callers
+        # that hold a reference to the wrapper can still call .commit() etc.
+        def __getattr__(self, name):
+            return getattr(self._conn, name)
+
+    def get_db():
+        conn = psycopg2.connect(DATABASE_URL)
+        return _PgConnWrapper(conn)
+
+else:
+    class _SqliteConnWrapper:
+        """Thin wrapper that preserves the existing SQLite context-manager
+        behaviour while exposing the same interface as the Postgres wrapper."""
+        def __init__(self, conn):
+            self._conn = conn
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            if exc_type is None:
+                self._conn.commit()
+            else:
+                self._conn.rollback()
+            self._conn.close()
+            return False
+
+        def __getattr__(self, name):
+            return getattr(self._conn, name)
+
+    def get_db():
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        return _SqliteConnWrapper(conn)
+
+
+# ── DB abstraction helpers ────────────────────────────────────────────────────
+# These normalise the two main differences between SQLite and psycopg2:
+#   1. Placeholder style: SQLite uses ?, psycopg2 uses %s
+#   2. Cursor / row-dict access: SQLite returns Row objects via conn.execute();
+#      psycopg2 needs an explicit cursor with RealDictCursor.
+
+def _ph(sql: str) -> str:
+    """Replace ? placeholders with %s for PostgreSQL."""
+    return sql.replace("?", "%s") if USE_POSTGRES else sql
+
+
+def db_execute(conn, sql: str, params=()):
+    """Execute a write statement. Returns the cursor (for RETURNING etc.)."""
+    sql = _ph(sql)
+    if USE_POSTGRES:
+        cur = conn._conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute(sql, params)
+        return cur
+    else:
+        return conn._conn.execute(sql, params)
+
+
+def db_fetchall(conn, sql: str, params=()):
+    """Execute a SELECT and return all rows as a list of dicts."""
+    sql = _ph(sql)
+    if USE_POSTGRES:
+        cur = conn._conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute(sql, params)
+        return [dict(r) for r in cur.fetchall()]
+    else:
+        rows = conn._conn.execute(sql, params).fetchall()
+        return [dict(r) for r in rows]
+
+
+def db_fetchone(conn, sql: str, params=()):
+    """Execute a SELECT and return a single row as a dict, or None."""
+    sql = _ph(sql)
+    if USE_POSTGRES:
+        cur = conn._conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute(sql, params)
+        row = cur.fetchone()
+        return dict(row) if row else None
+    else:
+        row = conn._conn.execute(sql, params).fetchone()
+        return dict(row) if row else None
+
+
+def _in_placeholders(n: int) -> str:
+    """Return n comma-separated placeholders for an IN clause."""
+    ph = "%s" if USE_POSTGRES else "?"
+    return ",".join([ph] * n)
+
+
+# ── UniqueViolation exception (DB-agnostic) ───────────────────────────────────
+if USE_POSTGRES:
+    _UniqueViolation = psycopg2.errors.UniqueViolation
+else:
+    _UniqueViolation = sqlite3.IntegrityError
+
 
 def init_db():
-    with get_db() as conn:
-        conn.executescript("""
+    conn = get_db()
+    if USE_POSTGRES:
+        db_execute(conn, """
+            CREATE TABLE IF NOT EXISTS rsvps (
+                id          SERIAL PRIMARY KEY,
+                full_name   TEXT NOT NULL,
+                phone       TEXT NOT NULL UNIQUE,
+                email       TEXT,
+                city        TEXT NOT NULL,
+                province    TEXT NOT NULL,
+                confirmed   INTEGER DEFAULT 1,
+                sms_sent    INTEGER DEFAULT 0,
+                created_at  TIMESTAMP DEFAULT NOW()
+            )""")
+        db_execute(conn, """
+            CREATE TABLE IF NOT EXISTS sms_log (
+                id          SERIAL PRIMARY KEY,
+                phone       TEXT NOT NULL,
+                message     TEXT NOT NULL,
+                status      TEXT,
+                twilio_sid  TEXT,
+                sent_at     TIMESTAMP DEFAULT NOW()
+            )""")
+        db_execute(conn, """
+            CREATE TABLE IF NOT EXISTS external_contacts (
+                id          SERIAL PRIMARY KEY,
+                full_name   TEXT NOT NULL,
+                phone       TEXT NOT NULL,
+                city        TEXT DEFAULT '',
+                province    TEXT DEFAULT '',
+                sms_sent    INTEGER DEFAULT 0,
+                imported_at TIMESTAMP DEFAULT NOW()
+            )""")
+    else:
+        db_execute(conn, """
             CREATE TABLE IF NOT EXISTS rsvps (
                 id          INTEGER PRIMARY KEY AUTOINCREMENT,
                 full_name   TEXT NOT NULL,
@@ -67,7 +217,8 @@ def init_db():
                 confirmed   INTEGER DEFAULT 1,
                 sms_sent    INTEGER DEFAULT 0,
                 created_at  TEXT DEFAULT (datetime('now'))
-            );
+            )""")
+        db_execute(conn, """
             CREATE TABLE IF NOT EXISTS sms_log (
                 id          INTEGER PRIMARY KEY AUTOINCREMENT,
                 phone       TEXT NOT NULL,
@@ -75,7 +226,8 @@ def init_db():
                 status      TEXT,
                 twilio_sid  TEXT,
                 sent_at     TEXT DEFAULT (datetime('now'))
-            );
+            )""")
+        db_execute(conn, """
             CREATE TABLE IF NOT EXISTS external_contacts (
                 id          INTEGER PRIMARY KEY AUTOINCREMENT,
                 full_name   TEXT NOT NULL,
@@ -84,8 +236,9 @@ def init_db():
                 province    TEXT DEFAULT '',
                 sms_sent    INTEGER DEFAULT 0,
                 imported_at TEXT DEFAULT (datetime('now'))
-            );
-        """)
+            )""")
+    conn._conn.commit()
+    conn._conn.close()
 
 # ── App Setup ─────────────────────────────────────────────────────────────────
 @asynccontextmanager
@@ -343,13 +496,21 @@ async def rsvp(request: Request, data: RSVPCreate):
 
     try:
         with get_db() as conn:
-            conn.execute(
-                "INSERT INTO rsvps (full_name, phone, email, city, province) VALUES (?, ?, ?, ?, ?)",
-                (data.full_name, phone, data.email, data.city, data.province)
-            )
-            row = conn.execute("SELECT last_insert_rowid() as id").fetchone()
-            rid = row["id"]
-    except sqlite3.IntegrityError:
+            if USE_POSTGRES:
+                cur = db_execute(
+                    conn,
+                    "INSERT INTO rsvps (full_name, phone, email, city, province) VALUES (?, ?, ?, ?, ?) RETURNING id",
+                    (data.full_name, phone, data.email, data.city, data.province)
+                )
+                rid = cur.fetchone()["id"]
+            else:
+                db_execute(
+                    conn,
+                    "INSERT INTO rsvps (full_name, phone, email, city, province) VALUES (?, ?, ?, ?, ?)",
+                    (data.full_name, phone, data.email, data.city, data.province)
+                )
+                rid = db_fetchone(conn, "SELECT last_insert_rowid() as id")["id"]
+    except _UniqueViolation:
         raise HTTPException(status_code=409, detail="Ce numéro est déjà inscrit.")
 
     # ── SMS de confirmation avec mention légale de désinscription ─────────────
@@ -363,11 +524,12 @@ async def rsvp(request: Request, data: RSVPCreate):
     try:
         result = send_sms(phone, sms_confirmation)
         with get_db() as conn:
-            conn.execute(
+            db_execute(
+                conn,
                 "INSERT INTO sms_log (phone, message, status, twilio_sid) VALUES (?,?,?,?)",
                 (phone, sms_confirmation, "sent", result["sid"])
             )
-            conn.execute("UPDATE rsvps SET sms_sent=1 WHERE id=?", (rid,))
+            db_execute(conn, "UPDATE rsvps SET sms_sent=1 WHERE id=?", (rid,))
     except Exception as e:
         print(f"[SMS confirmation] {e}")
 
@@ -378,11 +540,13 @@ async def rsvp(request: Request, data: RSVPCreate):
 @app.get("/api/stats")
 async def stats():
     with get_db() as conn:
-        total = conn.execute("SELECT COUNT(*) as count FROM rsvps WHERE confirmed=1").fetchone()["count"]
-        by_prov = conn.execute(
+        total_row = db_fetchone(conn, "SELECT COUNT(*) as count FROM rsvps WHERE confirmed=1")
+        total = total_row["count"]
+        by_prov = db_fetchall(
+            conn,
             "SELECT province, COUNT(*) as count FROM rsvps WHERE confirmed=1 GROUP BY province ORDER BY count DESC"
-        ).fetchall()
-    return {"total": total, "byProvince": [dict(r) for r in by_prov]}
+        )
+    return {"total": total, "byProvince": by_prov}
 
 
 # GET /api/admin/voters
@@ -390,8 +554,8 @@ async def stats():
 async def list_voters(request: Request, session: Optional[str] = Cookie(default=None, alias="admin_session")):
     require_admin(request, session)
     with get_db() as conn:
-        rows = conn.execute("SELECT * FROM rsvps ORDER BY created_at DESC").fetchall()
-    return [dict(r) for r in rows]
+        rows = db_fetchall(conn, "SELECT * FROM rsvps ORDER BY created_at DESC")
+    return rows
 
 
 # ── External Contacts (CSV Import) ────────────────────────────────────────────
@@ -438,7 +602,8 @@ async def import_csv(request: Request, file: UploadFile = File(...), session: Op
                 continue
 
             try:
-                conn.execute(
+                db_execute(
+                    conn,
                     "INSERT INTO external_contacts (full_name, phone, city, province) VALUES (?,?,?,?)",
                     (nom, phone, ville, prov)
                 )
@@ -460,8 +625,8 @@ async def import_csv(request: Request, file: UploadFile = File(...), session: Op
 async def list_external(request: Request, session: Optional[str] = Cookie(default=None, alias="admin_session")):
     require_admin(request, session)
     with get_db() as conn:
-        rows = conn.execute("SELECT * FROM external_contacts ORDER BY imported_at DESC").fetchall()
-    return [dict(r) for r in rows]
+        rows = db_fetchall(conn, "SELECT * FROM external_contacts ORDER BY imported_at DESC")
+    return rows
 
 
 # DELETE /api/admin/external-contacts  — clear all imported contacts
@@ -469,7 +634,7 @@ async def list_external(request: Request, session: Optional[str] = Cookie(defaul
 async def clear_external(request: Request, session: Optional[str] = Cookie(default=None, alias="admin_session")):
     require_admin(request, session)
     with get_db() as conn:
-        conn.execute("DELETE FROM external_contacts")
+        db_execute(conn, "DELETE FROM external_contacts")
     return {"success": True}
 
 
@@ -497,10 +662,10 @@ async def sms_blast(request: Request, data: BlastRequest, session: Optional[str]
     # ── Fetch RSVP contacts ───────────────────────────────────────────────────
     if data.source in ("rsvp", "both", None):
         if data.voter_ids:
-            placeholders = ",".join("?" * len(data.voter_ids))
+            placeholders = _in_placeholders(len(data.voter_ids))
             query = f"SELECT id, phone, full_name FROM rsvps WHERE confirmed=1 AND id IN ({placeholders})"
             with get_db() as conn:
-                rows = conn.execute(query, data.voter_ids).fetchall()
+                rows = db_fetchall(conn, query, data.voter_ids)
         else:
             query = "SELECT id, phone, full_name FROM rsvps WHERE confirmed=1"
             params = []
@@ -511,22 +676,22 @@ async def sms_blast(request: Request, data: BlastRequest, session: Optional[str]
             if data.limit:
                 query += f" LIMIT {int(data.limit)}"
             with get_db() as conn:
-                rows = conn.execute(query, params).fetchall()
+                rows = db_fetchall(conn, query, params)
         contacts += [{"id": r["id"], "phone": r["phone"], "full_name": r["full_name"], "source": "rsvp"} for r in rows]
 
     # ── Fetch External contacts ───────────────────────────────────────────────
     if data.source in ("external", "both"):
         if data.external_ids:
-            placeholders = ",".join("?" * len(data.external_ids))
+            placeholders = _in_placeholders(len(data.external_ids))
             query = f"SELECT id, phone, full_name FROM external_contacts WHERE id IN ({placeholders})"
             with get_db() as conn:
-                rows = conn.execute(query, data.external_ids).fetchall()
+                rows = db_fetchall(conn, query, data.external_ids)
         else:
             query = "SELECT id, phone, full_name FROM external_contacts ORDER BY id ASC"
             if data.limit and data.source == "external":
                 query += f" LIMIT {int(data.limit)}"
             with get_db() as conn:
-                rows = conn.execute(query).fetchall()
+                rows = db_fetchall(conn, query)
         contacts += [{"id": r["id"], "phone": r["phone"], "full_name": r["full_name"], "source": "external"} for r in rows]
 
     sent = 0
@@ -544,8 +709,9 @@ async def sms_blast(request: Request, data: BlastRequest, session: Optional[str]
             result = send_sms(c["phone"], msg)
             table = "rsvps" if c["source"] == "rsvp" else "external_contacts"
             with get_db() as conn:
-                conn.execute(f"UPDATE {table} SET sms_sent=sms_sent+1 WHERE id=?", (c["id"],))
-                conn.execute(
+                db_execute(conn, f"UPDATE {table} SET sms_sent=sms_sent+1 WHERE id=?", (c["id"],))
+                db_execute(
+                    conn,
                     "INSERT INTO sms_log (phone, message, status, twilio_sid) VALUES (?,?,?,?)",
                     (c["phone"], msg, "sent", result["sid"])
                 )
@@ -554,7 +720,8 @@ async def sms_blast(request: Request, data: BlastRequest, session: Optional[str]
             failed += 1
             errors.append({"phone": c["phone"], "error": str(e)})
             with get_db() as conn:
-                conn.execute(
+                db_execute(
+                    conn,
                     "INSERT INTO sms_log (phone, message, status) VALUES (?,?,?)",
                     (c["phone"], msg, "failed")
                 )
@@ -572,7 +739,8 @@ async def sms_single(request: Request, data: SMSSingle, session: Optional[str] =
             msg = msg.rstrip() + "\nRépondez STOP pour vous désabonner."
         result = send_sms(data.phone, msg)
         with get_db() as conn:
-            conn.execute(
+            db_execute(
+                conn,
                 "INSERT INTO sms_log (phone, message, status, twilio_sid) VALUES (?,?,?,?)",
                 (data.phone, msg, "sent", result["sid"])
             )
@@ -586,8 +754,8 @@ async def sms_single(request: Request, data: SMSSingle, session: Optional[str] =
 async def sms_log(request: Request, session: Optional[str] = Cookie(default=None, alias="admin_session")):
     require_admin(request, session)
     with get_db() as conn:
-        rows = conn.execute("SELECT * FROM sms_log ORDER BY sent_at DESC LIMIT 200").fetchall()
-    return [dict(r) for r in rows]
+        rows = db_fetchall(conn, "SELECT * FROM sms_log ORDER BY sent_at DESC LIMIT 200")
+    return rows
 
 
 # DELETE /api/admin/voter/{id}
@@ -595,5 +763,5 @@ async def sms_log(request: Request, session: Optional[str] = Cookie(default=None
 async def delete_voter(request: Request, voter_id: int, session: Optional[str] = Cookie(default=None, alias="admin_session")):
     require_admin(request, session)
     with get_db() as conn:
-        conn.execute("DELETE FROM rsvps WHERE id=?", (voter_id,))
+        db_execute(conn, "DELETE FROM rsvps WHERE id=?", (voter_id,))
     return {"success": True}

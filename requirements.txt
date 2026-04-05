@@ -7,3 +7,4 @@ slowapi
 python-dotenv
 pydantic
 itsdangerous
+psycopg2-binary
