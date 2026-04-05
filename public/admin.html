@@ -101,6 +101,13 @@
     }
     .blast-result.ok { background: rgba(0,180,80,0.15); border: 1px solid rgba(0,180,80,0.3); color: #4ade80; }
     .blast-result.err { background: rgba(36, 52, 104,0.15); border: 1px solid rgba(36, 52, 104,0.3); color: #ff7070; }
+    .channel-toggle { display:flex; gap:0.5rem; margin-bottom:1rem; }
+    .channel-btn { flex:1; padding:0.6rem 0.5rem; border-radius:8px; border:2px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.5); font-size:0.82rem; font-weight:700; cursor:pointer; text-align:center; transition:all 0.2s; }
+    .channel-btn.active-sms { border-color:#4ade80; color:#4ade80; background:rgba(74,222,128,0.08); }
+    .channel-btn.active-wa  { border-color:#25D366; color:#25D366; background:rgba(37,211,102,0.08); }
+    .channel-info { font-size:0.75rem; padding:0.6rem 0.8rem; border-radius:6px; margin-bottom:0.8rem; line-height:1.5; }
+    .channel-info.sms-info { background:rgba(74,222,128,0.07); border:1px solid rgba(74,222,128,0.2); color:rgba(255,255,255,0.6); }
+    .channel-info.wa-info  { background:rgba(37,211,102,0.07); border:1px solid rgba(37,211,102,0.3); color:rgba(255,255,255,0.6); }
 
     /* Table */
     .table-card {
@@ -348,6 +355,15 @@
         <div class="composer-panel">
           <div class="panel-title">✏️ Composer le message</div>
 
+          <!-- Canal d'envoi -->
+          <div class="channel-toggle">
+            <div class="channel-btn active-sms" id="ch-sms" onclick="setChannel('sms')">📱 SMS</div>
+            <div class="channel-btn" id="ch-wa" onclick="setChannel('whatsapp')">💬 WhatsApp</div>
+          </div>
+          <div class="channel-info sms-info" id="ch-info">
+            <strong>📱 SMS</strong> — Idéal pour le Canada. Fonctionne sans internet.
+          </div>
+
           <!-- Preset chips -->
           <div style="margin-bottom:0.6rem;">
             <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:1px;">Modèles rapides</div>
@@ -461,6 +477,7 @@
           <button class="send-btn" id="send-btn" onclick="sendBlast()">
             📤 Envoyer la campagne
           </button>
+          <div style="font-size:0.7rem;color:var(--muted);text-align:center;margin-top:0.5rem;" id="channel-label-display">Canal : SMS</div>
         </div>
       </div>
     </div>
@@ -758,6 +775,28 @@ function deselectAllContacts() {
 }
 
 // ── Send Blast ────────────────────────────────────────────────────────────
+// ── Channel (SMS / WhatsApp) ────────────────────────────────────────────────
+let activeChannel = 'sms';
+function setChannel(ch) {
+  activeChannel = ch;
+  document.getElementById('ch-sms').className = 'channel-btn' + (ch === 'sms' ? ' active-sms' : '');
+  document.getElementById('ch-wa').className  = 'channel-btn' + (ch === 'whatsapp' ? ' active-wa' : '');
+  const info = document.getElementById('ch-info');
+  const lbl  = document.getElementById('channel-label-display');
+  const btn  = document.getElementById('send-btn');
+  if (ch === 'sms') {
+    info.className = 'channel-info sms-info';
+    info.innerHTML = '<strong>📱 SMS</strong> — Idéal pour le Canada. Fonctionne sans internet.';
+    lbl.textContent = 'Canal : SMS';
+    btn.style.background = '';
+  } else {
+    info.className = 'channel-info wa-info';
+    info.innerHTML = '<strong>💬 WhatsApp</strong> — Idéal pour la diaspora en France, Bénin, Europe. <br>⚠️ Le destinataire doit avoir WhatsApp installé.';
+    lbl.textContent = 'Canal : WhatsApp';
+    btn.style.background = '#128C7E';
+  }
+}
+
 async function sendBlast() {
   const msg = document.getElementById('blast-msg').value.trim();
   const resultEl = document.getElementById('blast-result');
@@ -766,7 +805,7 @@ async function sendBlast() {
   if (!msg) { alert('Veuillez taper un message.'); return; }
 
   // Build payload based on mode
-  const payload = { message: msg };
+  const payload = { message: msg, channel: activeChannel };
   let recipientCount = 0;
 
   if (currentMode === 'all') {
@@ -793,7 +832,8 @@ async function sendBlast() {
   if (!recipientCount) { alert('Aucun destinataire trouvé.'); return; }
 
   const preview = msg.replace('{nom}', 'Kouassi');
-  if (!confirm(`📤 Envoyer à ${recipientCount} contact${recipientCount>1?'s':''}?\n\n"${preview.substring(0,100)}${preview.length>100?'…':''}"`)) return;
+  const chLabel = activeChannel === 'whatsapp' ? '💬 WhatsApp' : '📱 SMS';
+  if (!confirm(`📤 Envoyer via ${chLabel} à ${recipientCount} contact${recipientCount>1?'s':''}?\n\n"${preview.substring(0,100)}${preview.length>100?'…':''}"`)) return;
 
   resultEl.style.display = 'none';
   btn.disabled = true;
@@ -806,7 +846,8 @@ async function sendBlast() {
     });
     const data = await r.json();
     resultEl.className = 'result-bar ok';
-    resultEl.innerHTML = `✅ <strong>${data.sent}</strong> SMS envoyés avec succès.${data.failed > 0 ? ` <span style="color:#ff7070">${data.failed} échoués.</span>` : ''}`;
+    const chIcon = activeChannel === 'whatsapp' ? '💬' : '📱';
+    resultEl.innerHTML = `✅ <strong>${data.sent}</strong> messages ${chIcon} envoyés avec succès.${data.failed > 0 ? ` <span style="color:#ff7070">${data.failed} échoués.</span>` : ''}`;
     resultEl.style.display = 'block';
     loadVoters();
   } catch(e) {

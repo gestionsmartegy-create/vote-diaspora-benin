@@ -290,10 +290,12 @@ class BlastRequest(BaseModel):
     voter_ids: Optional[list[int]] = None
     source: Optional[str] = "rsvp"        # "rsvp" | "external" | "both"
     external_ids: Optional[list[int]] = None
+    channel: Optional[str] = "sms"        # "sms" | "whatsapp"
 
 class SMSSingle(BaseModel):
     phone: str
     message: str
+    channel: Optional[str] = "sms"        # "sms" | "whatsapp"
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 def normalize_phone(phone: str) -> str:
@@ -336,29 +338,39 @@ _sms_sent_today: dict = {}
 MAX_SMS_PER_RECIPIENT_PER_DAY = 3
 MAX_SMS_BODY_LENGTH = 320
 
-def send_sms(to: str, body: str) -> dict:
-    """Envoie SMS avec protections anti-abus. Clés 100% via env vars."""
+def send_message(to: str, body: str, channel: str = "sms") -> dict:
+    """Envoie SMS ou WhatsApp avec protections anti-abus."""
     # 1. Validation format E.164
     if not _PHONE_RE.match(to):
         raise ValueError(f"Numéro invalide (format E.164 requis): {to}")
     # 2. Limite longueur
     if len(body) > MAX_SMS_BODY_LENGTH:
         raise ValueError(f"Message trop long ({len(body)} chars, max {MAX_SMS_BODY_LENGTH})")
-    # 3. Anti-bombing: max 3 SMS/destinataire/jour
+    # 3. Anti-bombing: max 3 messages/destinataire/jour
     today = datetime.utcnow().date().isoformat()
-    key = f"{today}:{to}"
+    key = f"{today}:{channel}:{to}"
     count = _sms_sent_today.get(key, 0)
     if count >= MAX_SMS_PER_RECIPIENT_PER_DAY:
         raise ValueError(f"Limite journalière atteinte pour ce numéro")
     # 4. Mode mock si Twilio non configuré
     if not twilio or not TWILIO_FROM:
-        print(f"[SMS MOCK] To={to} | {body[:80]}")
+        print(f"[{channel.upper()} MOCK] To={to} | {body[:80]}")
         _sms_sent_today[key] = count + 1
         return {"sid": f"MOCK_{secrets.token_hex(8)}"}
-    # 5. Envoi réel via API Key (jamais hardcodée)
-    msg = twilio.messages.create(body=body, from_=TWILIO_FROM, to=to)
+    # 5. Envoi réel — SMS ou WhatsApp selon canal
+    if channel == "whatsapp":
+        from_addr = f"whatsapp:{TWILIO_FROM}"
+        to_addr   = f"whatsapp:{to}"
+    else:
+        from_addr = TWILIO_FROM
+        to_addr   = to
+    msg = twilio.messages.create(body=body, from_=from_addr, to=to_addr)
     _sms_sent_today[key] = count + 1
-    return {"sid": msg.sid}
+    return {"sid": msg.sid, "channel": channel}
+
+# Alias rétrocompatible
+def send_sms(to: str, body: str) -> dict:
+    return send_message(to, body, "sms")
 
 # ── Routes ────────────────────────────────────────────────────────────────────
 
@@ -733,14 +745,14 @@ async def sms_blast(request: Request, data: BlastRequest, session: Optional[str]
     for c in contacts:
         msg = base_message.replace("{nom}", c["full_name"].split()[0])
         try:
-            result = send_sms(c["phone"], msg)
+            result = send_message(c["phone"], msg, data.channel or "sms")
             table = "rsvps" if c["source"] == "rsvp" else "external_contacts"
             with get_db() as conn:
                 db_execute(conn, f"UPDATE {table} SET sms_sent=sms_sent+1 WHERE id=?", (c["id"],))
                 db_execute(
                     conn,
                     "INSERT INTO sms_log (phone, message, status, twilio_sid) VALUES (?,?,?,?)",
-                    (c["phone"], msg, "sent", result["sid"])
+                    (c["phone"], msg, f'sent_{data.channel or "sms"}', result["sid"])
                 )
             sent += 1
         except Exception as e:
@@ -764,7 +776,7 @@ async def sms_single(request: Request, data: SMSSingle, session: Optional[str] =
         msg = data.message
         if "STOP" not in msg.upper():
             msg = msg.rstrip() + "\nRépondez STOP pour vous désabonner."
-        result = send_sms(data.phone, msg)
+        result = send_message(data.phone, msg, data.channel or "sms")
         with get_db() as conn:
             db_execute(
                 conn,
