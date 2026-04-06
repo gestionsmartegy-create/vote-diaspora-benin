@@ -201,16 +201,28 @@ def init_db():
     if USE_POSTGRES:
         db_execute(conn, """
             CREATE TABLE IF NOT EXISTS rsvps (
-                id          SERIAL PRIMARY KEY,
-                full_name   TEXT NOT NULL,
-                phone       TEXT NOT NULL UNIQUE,
-                email       TEXT,
-                city        TEXT NOT NULL,
-                province    TEXT NOT NULL,
-                confirmed   INTEGER DEFAULT 1,
-                sms_sent    INTEGER DEFAULT 0,
-                created_at  TIMESTAMP DEFAULT NOW()
+                id               SERIAL PRIMARY KEY,
+                full_name        TEXT NOT NULL,
+                phone            TEXT NOT NULL UNIQUE,
+                email            TEXT,
+                city             TEXT NOT NULL,
+                province         TEXT NOT NULL,
+                confirmed        INTEGER DEFAULT 1,
+                sms_sent         INTEGER DEFAULT 0,
+                consent_at       TIMESTAMP,
+                consent_ip       TEXT,
+                created_at       TIMESTAMP DEFAULT NOW()
             )""")
+        # Migrations pour DB existante
+        for col, definition in [
+            ("consent_at", "TIMESTAMP"),
+            ("consent_ip", "TEXT"),
+        ]:
+            try:
+                db_execute(conn, f"ALTER TABLE rsvps ADD COLUMN {col} {definition}")
+                conn._conn.commit()
+            except Exception:
+                pass
         db_execute(conn, """
             CREATE TABLE IF NOT EXISTS sms_log (
                 id          SERIAL PRIMARY KEY,
@@ -248,6 +260,8 @@ def init_db():
                 province    TEXT NOT NULL,
                 confirmed   INTEGER DEFAULT 1,
                 sms_sent    INTEGER DEFAULT 0,
+                consent_at  TEXT,
+                consent_ip  TEXT,
                 created_at  TEXT DEFAULT (datetime('now'))
             )""")
         db_execute(conn, """
@@ -321,6 +335,7 @@ class RSVPCreate(BaseModel):
     city: str
     province: str
     recaptcha_token: Optional[str] = None
+    consent_at: Optional[str] = None  # ISO timestamp du clic sur la checkbox
 
 class BlastRequest(BaseModel):
     message: str
@@ -591,21 +606,23 @@ async def rsvp(request: Request, data: RSVPCreate):
         raise HTTPException(status_code=400, detail="Champs obligatoires manquants.")
 
     phone = normalize_phone(data.phone)
+    client_ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "unknown").split(",")[0].strip()
+    consent_at = data.consent_at or None
 
     try:
         with get_db() as conn:
             if USE_POSTGRES:
                 cur = db_execute(
                     conn,
-                    "INSERT INTO rsvps (full_name, phone, email, city, province) VALUES (?, ?, ?, ?, ?) RETURNING id",
-                    (data.full_name, phone, data.email, data.city, data.province)
+                    "INSERT INTO rsvps (full_name, phone, email, city, province, consent_at, consent_ip) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id",
+                    (data.full_name, phone, data.email, data.city, data.province, consent_at, client_ip)
                 )
                 rid = cur.fetchone()["id"]
             else:
                 db_execute(
                     conn,
-                    "INSERT INTO rsvps (full_name, phone, email, city, province) VALUES (?, ?, ?, ?, ?)",
-                    (data.full_name, phone, data.email, data.city, data.province)
+                    "INSERT INTO rsvps (full_name, phone, email, city, province, consent_at, consent_ip) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (data.full_name, phone, data.email, data.city, data.province, consent_at, client_ip)
                 )
                 rid = db_fetchone(conn, "SELECT last_insert_rowid() as id")["id"]
     except _UniqueViolation:

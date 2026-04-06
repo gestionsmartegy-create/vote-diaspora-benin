@@ -778,7 +778,7 @@
           <!-- Consentement obligatoire -->
           <div class="consent-box">
             <label class="consent-label">
-              <input type="checkbox" id="consent-check" required />
+              <input type="checkbox" id="consent-check" required onchange="captureConsent(this)" />
               <span>
                 J'accepte la <a href="/politique-confidentialite.html" target="_blank">politique de confidentialité</a>
                 et consens à recevoir des <strong>SMS de rappel de vote</strong> sur mon numéro.
@@ -787,6 +787,7 @@
               </span>
             </label>
           </div>
+          <input type="hidden" id="consent-at" value="" />
 
           <button type="submit" class="submit-btn" id="submit-btn">
             🗳️ Je m'engage à voter le 12 Avril
@@ -887,12 +888,24 @@ document.getElementById('rsvp-form').addEventListener('submit', async (e) => {
   // Nettoie si l utilisateur a inclu le code pays dans le champ
   const fullPhone = code + numRaw;
 
+  // Validation numéro de téléphone
+  const phoneError = validatePhone(codeRaw, numRaw);
+  if (phoneError) {
+    errEl.textContent   = phoneError;
+    errEl.style.display = 'block';
+    btn.disabled        = false;
+    btn.textContent     = '🗳️ Je m\'engage à voter le 12 Avril';
+    document.getElementById('phone').focus();
+    return;
+  }
+
   const payload = {
-    full_name: document.getElementById('full_name').value.trim(),
-    phone:     fullPhone,
-    email:     document.getElementById('email').value.trim(),
-    city:      document.getElementById('city').value.trim(),
-    province:  document.getElementById('province').value
+    full_name:  document.getElementById('full_name').value.trim(),
+    phone:      fullPhone,
+    email:      document.getElementById('email').value.trim(),
+    city:       document.getElementById('city').value.trim(),
+    province:   document.getElementById('province').value,
+    consent_at: document.getElementById('consent-at').value || new Date().toISOString()
   };
 
   try {
@@ -926,6 +939,35 @@ document.getElementById('rsvp-form').addEventListener('submit', async (e) => {
   }
 });
 
+// ── Consent capture ───────────────────────────────────────────────────────────
+function captureConsent(checkbox) {
+  if (checkbox.checked) {
+    document.getElementById('consent-at').value = new Date().toISOString();
+  } else {
+    document.getElementById('consent-at').value = '';
+  }
+}
+
+// ── Phone validation ──────────────────────────────────────────────────────────
+function validatePhone(codeRaw, numRaw) {
+  const digits = numRaw.replace(/\D/g, '');
+  if (!digits) return 'Veuillez saisir votre numéro de téléphone.';
+
+  if (codeRaw === '+229') {
+    // Nouveau format Bénin obligatoire: 01XXXXXXXX (10 chiffres, commence par 01)
+    if (digits.length !== 10 || !digits.startsWith('01')) {
+      return '⚠️ Numéro Bénin invalide. Le nouveau format est obligatoire: 01 XX XX XX XX (10 chiffres commençant par 01). Ex: 01 96 52 47 03';
+    }
+  } else if (codeRaw === '+1' || codeRaw === '+1-us') {
+    if (digits.length !== 10) return 'Numéro Canada/USA invalide — 10 chiffres requis. Ex: 514 000 0000';
+  } else if (codeRaw === '+33') {
+    if (digits.length < 9 || digits.length > 10) return 'Numéro France invalide. Ex: 06 12 34 56 78';
+  } else {
+    if (digits.length < 6 || digits.length > 15) return 'Numéro de téléphone invalide.';
+  }
+  return null; // valide
+}
+
 // ── Phone helpers ─────────────────────────────────────────────────────────────
 const PHONE_HINTS = {
   '+1':    '514 000 0000 (10 chiffres)',
@@ -939,7 +981,7 @@ const PHONE_HINTS = {
   '+39':   '312 345 6789',
   '+34':   '612 345 678',
   '+351':  '912 345 678',
-  '+229':  '96 00 00 00',
+  '+229':  '01 96 00 00 00',
   '+225':  '07 00 00 00 00',
   '+221':  '77 000 00 00',
   '+241':  '06 00 00 00',

@@ -336,11 +336,11 @@
             <thead>
               <tr>
                 <th>#</th><th>Nom</th><th>Téléphone</th><th>Ville</th>
-                <th>Province</th><th>SMS</th><th>Inscrit le</th><th></th>
+                <th>Province</th><th>SMS</th><th>Consentement</th><th>Inscrit le</th><th></th>
               </tr>
             </thead>
             <tbody id="voters-tbody">
-              <tr class="empty-row"><td colspan="8">Chargement…</td></tr>
+              <tr class="empty-row"><td colspan="9">Chargement…</td></tr>
             </tbody>
           </table>
         </div>
@@ -650,11 +650,14 @@ function updateStats(voters) {
 function renderVoters(voters) {
   const tbody = document.getElementById('voters-tbody');
   if (!voters.length) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="8">Aucun inscrit pour l\'instant.</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="9">Aucun inscrit pour l\'instant.</td></tr>';
     return;
   }
-  tbody.innerHTML = voters.map(v => `
-    <tr>
+  tbody.innerHTML = voters.map(v => {
+    const consentBadge = v.consent_at
+      ? `<span title="Cliqué le ${v.consent_at.slice(0,16)}&#10;IP: ${v.consent_ip||'—'}" style="display:inline-flex;align-items:center;gap:3px;background:#1a3a1a;color:#4caf50;border:1px solid #4caf50;border-radius:4px;padding:2px 6px;font-size:0.7rem;font-weight:700;cursor:default;">✔ Oui</span>`
+      : `<span style="color:rgba(255,255,255,0.2);font-size:0.75rem;">—</span>`;
+    return `<tr>
       <td style="color:rgba(255,255,255,0.3)">${v.id}</td>
       <td><strong>${esc(v.full_name)}</strong></td>
       <td style="font-family:monospace">${esc(v.phone)}</td>
@@ -663,10 +666,11 @@ function renderVoters(voters) {
       <td>${v.sms_sent > 0
         ? `<span class="badge badge-green">${v.sms_sent} ✓</span>`
         : `<span class="badge badge-gray">0</span>`}</td>
+      <td>${consentBadge}</td>
       <td style="color:rgba(255,255,255,0.4);font-size:0.75rem">${v.created_at.slice(0,16)}</td>
       <td><button class="delete-btn" onclick="deleteVoter(${v.id})">✕</button></td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
 }
 
 function filterTable(q) {
