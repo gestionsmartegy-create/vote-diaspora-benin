@@ -353,6 +353,21 @@
 
         <!-- LEFT: Message composer -->
         <div class="composer-panel">
+          <!-- ── Gel SMS ──────────────────────────────────────────────── -->
+          <div id="sms-freeze-bar" style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:1rem 1.2rem;margin-bottom:1.2rem;">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.7rem;">
+              <div>
+                <div style="font-size:0.8rem;font-weight:700;color:var(--white);">⏸ Gel des SMS</div>
+                <div id="freeze-status-text" style="font-size:0.72rem;color:var(--muted);margin-top:2px;">Chargement…</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;">
+                <input type="datetime-local" id="freeze-until-input" style="background:#0d0d1a;border:1px solid rgba(255,255,255,0.15);color:var(--white);border-radius:6px;padding:0.35rem 0.6rem;font-size:0.8rem;" />
+                <button onclick="freezeSMS()" style="background:#c0392b;color:#fff;border:none;border-radius:6px;padding:0.38rem 0.9rem;font-size:0.8rem;font-weight:700;cursor:pointer;">⏸ Geler</button>
+                <button onclick="resumeSMS()" style="background:#27ae60;color:#fff;border:none;border-radius:6px;padding:0.38rem 0.9rem;font-size:0.8rem;font-weight:700;cursor:pointer;">▶ Reprendre</button>
+              </div>
+            </div>
+          </div>
+
           <div class="panel-title">✏️ Composer le message</div>
 
           <!-- Canal d'envoi -->
@@ -604,7 +619,16 @@ function logout() {
     .finally(() => { window.location.replace('/login'); });
 }
 // Charger les données au démarrage
-window.addEventListener('DOMContentLoaded', () => loadVoters());
+window.addEventListener('DOMContentLoaded', () => {
+  loadVoters();
+  loadFreezeStatus();
+  // Pré-remplir l'input avec demain midi (heure locale)
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(12, 0, 0, 0);
+  const pad = n => String(n).padStart(2,'0');
+  document.getElementById('freeze-until-input').value =
+    `${tomorrow.getFullYear()}-${pad(tomorrow.getMonth()+1)}-${pad(tomorrow.getDate())}T${pad(tomorrow.getHours())}:00`;
+});
 
 // ── Tabs ──────────────────────────────────────────────────────────────────
 function switchTab(name) {
@@ -776,6 +800,36 @@ function selectAllContacts() {
 function deselectAllContacts() {
   document.querySelectorAll('.contact-checkbox').forEach(c => c.checked = false);
   updateManualCount();
+}
+
+// ── Gel SMS ──────────────────────────────────────────────────────────────────
+async function loadFreezeStatus() {
+  try {
+    const r = await apiFetch('/api/admin/sms-status', {});
+    const d = await r.json();
+    const txt = document.getElementById('freeze-status-text');
+    const bar = document.getElementById('sms-freeze-bar');
+    if (d.paused) {
+      const local = new Date(d.pause_until + (d.pause_until.endsWith('Z') ? '' : 'Z')).toLocaleString('fr-CA');
+      txt.innerHTML = `<span style="color:#e74c3c;font-weight:700;">⏸ SMS gelés</span> — reprise automatique le <strong>${local}</strong>`;
+      bar.style.borderColor = 'rgba(231,76,60,0.5)';
+    } else {
+      txt.innerHTML = '<span style="color:#2ecc71;font-weight:700;">▶ SMS actifs</span> — les envois fonctionnent normalement';
+      bar.style.borderColor = 'rgba(46,204,113,0.3)';
+    }
+  } catch(e) {}
+}
+async function freezeSMS() {
+  const val = document.getElementById('freeze-until-input').value;
+  if (!val) { alert('Choisissez une date/heure de reprise.'); return; }
+  // Convertir datetime-local (heure locale) en UTC ISO
+  const utcStr = new Date(val).toISOString();
+  const r = await apiFetch('/api/admin/sms-pause', { method:'POST', body: JSON.stringify({ pause_until: utcStr }) });
+  if (r.ok) { await loadFreezeStatus(); }
+}
+async function resumeSMS() {
+  const r = await apiFetch('/api/admin/sms-pause', { method:'POST', body: JSON.stringify({ pause_until: null }) });
+  if (r.ok) { await loadFreezeStatus(); }
 }
 
 // ── Send Blast ────────────────────────────────────────────────────────────

@@ -249,6 +249,11 @@ def init_db():
                 sms_sent    INTEGER DEFAULT 0,
                 imported_at TIMESTAMP DEFAULT NOW()
             )""")
+        db_execute(conn, """
+            CREATE TABLE IF NOT EXISTS settings (
+                key   TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            )""")
     else:
         db_execute(conn, """
             CREATE TABLE IF NOT EXISTS rsvps (
@@ -289,6 +294,11 @@ def init_db():
                 province    TEXT DEFAULT '',
                 sms_sent    INTEGER DEFAULT 0,
                 imported_at TEXT DEFAULT (datetime('now'))
+            )""")
+        db_execute(conn, """
+            CREATE TABLE IF NOT EXISTS settings (
+                key   TEXT PRIMARY KEY,
+                value TEXT NOT NULL
             )""")
     conn._conn.commit()
     conn._conn.close()
@@ -392,8 +402,29 @@ _sms_sent_today: dict = {}
 MAX_SMS_PER_RECIPIENT_PER_DAY = 3
 MAX_SMS_BODY_LENGTH = 320
 
+def get_sms_pause_until() -> Optional[str]:
+    """Retourne l'heure de fin de gel SMS (ISO string) ou None si actif."""
+    try:
+        with get_db() as conn:
+            row = db_fetchone(conn, "SELECT value FROM settings WHERE key='sms_pause_until'")
+            if row:
+                return row["value"]
+    except Exception:
+        pass
+    return None
+
 def send_message(to: str, body: str, channel: str = "sms") -> dict:
     """Envoie SMS ou WhatsApp avec protections anti-abus."""
+    # 0. Vérification gel SMS
+    pause_until = get_sms_pause_until()
+    if pause_until:
+        try:
+            resume_dt = datetime.fromisoformat(pause_until)
+            if datetime.utcnow() < resume_dt:
+                raise ValueError(f"SMS gelés jusqu'au {pause_until} UTC. Inscriptions actives.")
+        except ValueError as ve:
+            if "gelés" in str(ve):
+                raise
     # 1. Validation format E.164
     if not _PHONE_RE.match(to):
         raise ValueError(f"Numéro invalide (format E.164 requis): {to}")
@@ -880,3 +911,32 @@ async def delete_voter(request: Request, voter_id: int, session: Optional[str] =
     with get_db() as conn:
         db_execute(conn, "DELETE FROM rsvps WHERE id=?", (voter_id,))
     return {"success": True}
+
+
+# GET /api/admin/sms-status — état du gel SMS
+@app.get("/api/admin/sms-status")
+async def sms_status(request: Request, session: Optional[str] = Cookie(default=None, alias="admin_session")):
+    require_admin(request, session)
+    pause_until = get_sms_pause_until()
+    if pause_until:
+        try:
+            resume_dt = datetime.fromisoformat(pause_until)
+            paused = datetime.utcnow() < resume_dt
+            return {"paused": paused, "pause_until": pause_until}
+        except Exception:
+            pass
+    return {"paused": False, "pause_until": None}
+
+
+# POST /api/admin/sms-pause — geler les SMS jusqu'à une date/heure UTC
+@app.post("/api/admin/sms-pause")
+async def sms_pause(request: Request, session: Optional[str] = Cookie(default=None, alias="admin_session")):
+    require_admin(request, session)
+    body = await request.json()
+    pause_until = body.get("pause_until")  # ISO UTC string ou null pour reprendre
+    with get_db() as conn:
+        if pause_until:
+            db_execute(conn, "INSERT INTO settings (key,value) VALUES ('sms_pause_until',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (pause_until,))
+        else:
+            db_execute(conn, "DELETE FROM settings WHERE key='sms_pause_until'")
+    return {"success": True, "pause_until": pause_until}
