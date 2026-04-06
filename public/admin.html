@@ -547,7 +547,7 @@
         <div style="overflow-x:auto;">
           <table>
             <thead>
-              <tr><th>Date</th><th>Téléphone</th><th>Message</th><th>Statut</th><th>SID</th></tr>
+              <tr><th>Date</th><th>Téléphone</th><th>Message</th><th>Statut</th><th>Provider</th><th>SID</th></tr>
             </thead>
             <tbody id="log-tbody">
               <tr class="empty-row"><td colspan="5">Chargement…</td></tr>
@@ -865,20 +865,25 @@ async function loadLog() {
   const logs = await r.json();
   const tbody = document.getElementById('log-tbody');
   if (!logs.length) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Aucun SMS envoyé.</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Aucun SMS envoyé.</td></tr>';
     return;
   }
-  tbody.innerHTML = logs.map(l => `
-    <tr>
+  tbody.innerHTML = logs.map(l => {
+    const providerBadge = l.provider === 'africastalking'
+      ? '<span style="display:inline-flex;align-items:center;gap:4px;background:#1a3a1a;color:#4caf50;border:1px solid #4caf50;border-radius:4px;padding:2px 7px;font-size:0.7rem;font-weight:600;">✔ AT</span>'
+      : '<span style="display:inline-flex;align-items:center;gap:4px;background:#1a2a3a;color:#2196f3;border:1px solid #2196f3;border-radius:4px;padding:2px 7px;font-size:0.7rem;font-weight:600;">✔ Twilio</span>';
+    const statusBadge = (l.status||'').startsWith('sent')
+      ? '<span class="badge badge-green">✓ Envoyé</span>'
+      : '<span class="badge badge-gray">✗ Échoué</span>';
+    return `<tr>
       <td style="font-size:0.75rem;color:rgba(255,255,255,0.4)">${l.sent_at.slice(0,16)}</td>
       <td style="font-family:monospace;font-size:0.8rem">${esc(l.phone)}</td>
       <td style="font-size:0.8rem;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.message)}</td>
-      <td>${l.status === 'sent'
-        ? '<span class="badge badge-green">✓ Envoyé</span>'
-        : '<span class="badge badge-gray">✗ Échoué</span>'}</td>
+      <td>${statusBadge}</td>
+      <td>${l.provider ? providerBadge : '<span style="color:rgba(255,255,255,0.2)">—</span>'}</td>
       <td style="font-family:monospace;font-size:0.7rem;color:rgba(255,255,255,0.3)">${l.twilio_sid || '—'}</td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
 }
 
 // ── Export CSV ─────────────────────────────────────────────────────────────

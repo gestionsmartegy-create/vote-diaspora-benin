@@ -218,8 +218,15 @@ def init_db():
                 message     TEXT NOT NULL,
                 status      TEXT,
                 twilio_sid  TEXT,
+                provider    TEXT DEFAULT '',
                 sent_at     TIMESTAMP DEFAULT NOW()
             )""")
+        # Migration: ajoute provider si absent (DB existante)
+        try:
+            db_execute(conn, "ALTER TABLE sms_log ADD COLUMN provider TEXT DEFAULT ''")
+            conn._conn.commit()
+        except Exception:
+            pass
         db_execute(conn, """
             CREATE TABLE IF NOT EXISTS external_contacts (
                 id          SERIAL PRIMARY KEY,
@@ -250,8 +257,15 @@ def init_db():
                 message     TEXT NOT NULL,
                 status      TEXT,
                 twilio_sid  TEXT,
+                provider    TEXT DEFAULT '',
                 sent_at     TEXT DEFAULT (datetime('now'))
             )""")
+        # Migration: ajoute provider si absent (DB existante)
+        try:
+            db_execute(conn, "ALTER TABLE sms_log ADD COLUMN provider TEXT DEFAULT ''")
+            conn._conn.commit()
+        except Exception:
+            pass
         db_execute(conn, """
             CREATE TABLE IF NOT EXISTS external_contacts (
                 id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -610,8 +624,8 @@ async def rsvp(request: Request, data: RSVPCreate):
         with get_db() as conn:
             db_execute(
                 conn,
-                "INSERT INTO sms_log (phone, message, status, twilio_sid) VALUES (?,?,?,?)",
-                (phone, sms_confirmation, "sent", result["sid"])
+                "INSERT INTO sms_log (phone, message, status, twilio_sid, provider) VALUES (?,?,?,?,?)",
+                (phone, sms_confirmation, "sent", result.get("sid",""), result.get("provider","twilio"))
             )
             db_execute(conn, "UPDATE rsvps SET sms_sent=1 WHERE id=?", (rid,))
     except Exception as e:
@@ -796,8 +810,8 @@ async def sms_blast(request: Request, data: BlastRequest, session: Optional[str]
                 db_execute(conn, f"UPDATE {table} SET sms_sent=sms_sent+1 WHERE id=?", (c["id"],))
                 db_execute(
                     conn,
-                    "INSERT INTO sms_log (phone, message, status, twilio_sid) VALUES (?,?,?,?)",
-                    (c["phone"], msg, f'sent_{data.channel or "sms"}', result["sid"])
+                    "INSERT INTO sms_log (phone, message, status, twilio_sid, provider) VALUES (?,?,?,?,?)",
+                    (c["phone"], msg, f'sent_{data.channel or "sms"}', result.get("sid",""), result.get("provider","twilio"))
                 )
             sent += 1
         except Exception as e:
@@ -806,8 +820,8 @@ async def sms_blast(request: Request, data: BlastRequest, session: Optional[str]
             with get_db() as conn:
                 db_execute(
                     conn,
-                    "INSERT INTO sms_log (phone, message, status) VALUES (?,?,?)",
-                    (c["phone"], msg, "failed")
+                    "INSERT INTO sms_log (phone, message, status, provider) VALUES (?,?,?,?)",
+                    (c["phone"], msg, "failed", route_provider(c["phone"]))
                 )
 
     return {"success": True, "sent": sent, "failed": failed, "errors": errors}
@@ -825,8 +839,8 @@ async def sms_single(request: Request, data: SMSSingle, session: Optional[str] =
         with get_db() as conn:
             db_execute(
                 conn,
-                "INSERT INTO sms_log (phone, message, status, twilio_sid) VALUES (?,?,?,?)",
-                (data.phone, msg, "sent", result["sid"])
+                "INSERT INTO sms_log (phone, message, status, twilio_sid, provider) VALUES (?,?,?,?,?)",
+                (data.phone, msg, "sent", result.get("sid",""), result.get("provider","twilio"))
             )
         return {"success": True, "sid": result["sid"]}
     except Exception as e:
