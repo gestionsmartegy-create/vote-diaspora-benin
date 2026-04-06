@@ -19,6 +19,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from twilio.rest import Client as TwilioClient
 from twilio.base.exceptions import TwilioRestException
+import africastalking
 
 load_dotenv()
 
@@ -44,6 +45,30 @@ def _make_twilio():
 
 twilio = _make_twilio()
 signer   = URLSafeTimedSerializer(SECRET_KEY, salt="admin-session")
+
+# ── Africa's Talking ──────────────────────────────────────────────────────────
+AT_USERNAME = os.getenv("AT_USERNAME", "")
+AT_API_KEY  = os.getenv("AT_API_KEY", "")
+
+def _make_at_sms():
+    if AT_USERNAME and AT_API_KEY:
+        try:
+            africastalking.initialize(AT_USERNAME, AT_API_KEY)
+            return africastalking.SMS
+        except Exception as e:
+            print(f"[AT] Init error: {e}")
+    return None
+
+at_sms = _make_at_sms()
+
+# Préfixes Canada/US → Twilio ; reste → Africa's Talking
+CANADA_US_PREFIXES = ("+1",)
+
+def route_provider(phone: str) -> str:
+    for prefix in CANADA_US_PREFIXES:
+        if phone.startswith(prefix):
+            return "twilio"
+    return "africastalking" if at_sms else "twilio"
 
 # Track failed login attempts per IP
 _login_attempts: dict = {}  # ip -> [timestamp, ...]
