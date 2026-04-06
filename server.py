@@ -357,16 +357,36 @@ def send_message(to: str, body: str, channel: str = "sms") -> dict:
         print(f"[{channel.upper()} MOCK] To={to} | {body[:80]}")
         _sms_sent_today[key] = count + 1
         return {"sid": f"MOCK_{secrets.token_hex(8)}"}
-    # 5. Envoi réel — SMS ou WhatsApp selon canal
+    # 5. Envoi réel — routage hybride Twilio / Africa's Talking
+    provider = route_provider(to)
     if channel == "whatsapp":
-        from_addr = f"whatsapp:{TWILIO_FROM}"
-        to_addr   = f"whatsapp:{to}"
+        # WhatsApp toujours via Twilio
+        if not twilio or not TWILIO_FROM:
+            raise ValueError("Twilio non configuré pour WhatsApp")
+        msg = twilio.messages.create(
+            body=body,
+            from_=f"whatsapp:{TWILIO_FROM}",
+            to=f"whatsapp:{to}"
+        )
+        _sms_sent_today[key] = count + 1
+        return {"sid": msg.sid, "channel": "whatsapp", "provider": "twilio"}
+    elif provider == 'africastalking' and at_sms:
+        # SMS international → Africa's Talking
+        response = at_sms.send(body, [to])
+        results  = response.get('SMSMessageData', {}).get('Recipients', [])
+        sid = results[0].get('messageId', 'AT_UNKNOWN') if results else 'AT_UNKNOWN'
+        status = results[0].get('status', 'unknown') if results else 'unknown'
+        if status not in ('Success', 'success'):
+            raise ValueError(f"AT error: {status}")
+        _sms_sent_today[key] = count + 1
+        return {"sid": sid, "channel": "sms", "provider": "africastalking"}
     else:
-        from_addr = TWILIO_FROM
-        to_addr   = to
-    msg = twilio.messages.create(body=body, from_=from_addr, to=to_addr)
-    _sms_sent_today[key] = count + 1
-    return {"sid": msg.sid, "channel": channel}
+        # SMS Canada/US → Twilio
+        if not twilio or not TWILIO_FROM:
+            raise ValueError("Twilio non configuré")
+        msg = twilio.messages.create(body=body, from_=TWILIO_FROM, to=to)
+        _sms_sent_today[key] = count + 1
+        return {"sid": msg.sid, "channel": "sms", "provider": "twilio"}
 
 # Alias rétrocompatible
 def send_sms(to: str, body: str) -> dict:
